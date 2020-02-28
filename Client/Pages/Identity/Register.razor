@@ -1,0 +1,67 @@
+﻿@page "/register"
+@inject IAuthService AuthService
+@inject NavigationManager NavManager
+
+<h2>Register</h2>
+<hr />
+
+@if (_showErrors)
+{
+    <div class="card alert alert-danger no-padding" role="alert">
+        <div class="card-body">
+            @foreach (var error in _errors)
+            {
+                @error
+            }
+        </div>
+    </div>
+}
+
+<EditForm Model="RegisterModel" OnValidSubmit="HandleRegistration">
+    <DataAnnotationsValidator />
+
+    <div class="form-group">
+        <Label TModel="RegisterModel" For="usernameInput" PropertyName="@nameof(RegisterModel.Username)"></Label>
+        <InputText Id="usernameInput" class="form-control" @bind-Value="RegisterModel.Username" />
+        <ValidationMessage For="@(() => RegisterModel.Username)" />
+    </div>
+    <div class="form-group">
+        <Label TModel="RegisterModel" For="emailInput" PropertyName="@nameof(RegisterModel.Email)"></Label>
+        <InputText Id="emailInput" class="form-control" @bind-Value="RegisterModel.Email" />
+        <ValidationMessage For="@(() => RegisterModel.Email)" />
+    </div>
+    <div class="form-group">
+        <Label TModel="RegisterModel" For="passwordInput" PropertyName="@nameof(RegisterModel.Password)"></Label>
+        <InputText Id="passwordInput" class="form-control" type="password" @bind-Value="RegisterModel.Password" />
+        <ValidationMessage For="@(() => RegisterModel.Password)" />
+    </div>
+    <div class="form-group">
+        <Label TModel="RegisterModel" For="confirmPasswordInput" PropertyName="@nameof(RegisterModel.ConfirmPassword)"></Label>
+        <InputText Id="confirmPasswordInput" class="form-control" type="password" @bind-Value="RegisterModel.ConfirmPassword" />
+        <ValidationMessage For="@(() => RegisterModel.ConfirmPassword)" />
+    </div>
+    
+    <button class="btn btn-primary" type="submit">Register</button>
+</EditForm>
+
+@code {
+    private RegisterModel RegisterModel = new RegisterModel();
+    private bool _showErrors;
+    private IEnumerable<string> _errors;
+
+    private async Task HandleRegistration()
+    {
+        _showErrors = false;
+
+        var result = await AuthService.Register(RegisterModel);
+        if (result.Succeeded)
+        {
+            NavManager.NavigateTo("/");
+        }
+        else
+        {
+            _errors = result.Errors;
+            _showErrors = true;
+        }
+    }
+}

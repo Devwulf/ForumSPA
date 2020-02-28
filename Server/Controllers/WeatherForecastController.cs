@@ -5,6 +5,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using Microsoft.AspNetCore.Authorization;
+using ForumSPA.Server.Authorization;
 
 namespace ForumSPA.Server.Controllers
 {
@@ -25,6 +27,7 @@ namespace ForumSPA.Server.Controllers
         }
 
         [HttpGet]
+        [Authorize(Roles = ForumConstants.AdministratorRole)]
         public IEnumerable<WeatherForecast> Get()
         {
             var rng = new Random();

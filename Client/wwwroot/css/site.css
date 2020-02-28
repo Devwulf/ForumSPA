@@ -58,7 +58,7 @@ app {
         font-size: 1.1rem;
     }
 
-    .sidebar .oi {
+    .sidebar .fas {
         width: 2rem;
         font-size: 1.1rem;
         vertical-align: text-top;
@@ -180,4 +180,17 @@ app {
         /* Never collapse the sidebar for wide screens */
         display: block;
     }
+}
+
+/* Custom CSS */
+.margin-right {
+    margin-right: 2rem;
+}
+
+.width-2rem {
+    width: 2rem;
+}
+
+.no-padding {
+    padding: 0;
 }

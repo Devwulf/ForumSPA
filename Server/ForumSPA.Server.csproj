@@ -1,18 +1,47 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.Web">
-
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.NET.Sdk.Web">
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <LangVersion>7.3</LangVersion>
+    <UserSecretsId>3595acae-00f9-4f1a-8401-26d1d0755f0b</UserSecretsId>
   </PropertyGroup>
-
   <ItemGroup>
+    <Compile Remove="Data\Migrations\20200220043347_InitialMigrate.cs" />
+    <Compile Remove="Data\Migrations\20200220043347_InitialMigrate.Designer.cs" />
+    <Compile Remove="Data\Migrations\20200223180716_InitialForumMigrate.cs" />
+    <Compile Remove="Data\Migrations\20200223180716_InitialForumMigrate.Designer.cs" />
+    <Compile Remove="Data\Migrations\20200223181117_InitialForumMigrate.cs" />
+    <Compile Remove="Data\Migrations\20200223181117_InitialForumMigrate.Designer.cs" />
+    <Compile Remove="Data\Migrations\20200223182030_InitialForumMigrate.cs" />
+    <Compile Remove="Data\Migrations\20200223182030_InitialForumMigrate.Designer.cs" />
+    <Compile Remove="Data\Migrations\20200223182328_InitialForumMigrate.cs" />
+    <Compile Remove="Data\Migrations\20200223182328_InitialForumMigrate.Designer.cs" />
+    <Compile Remove="Data\Migrations\20200223183319_ForumPostBodyNText.cs" />
+    <Compile Remove="Data\Migrations\20200223183319_ForumPostBodyNText.Designer.cs" />
+    <Compile Remove="Data\Migrations\20200223183701_DropForumPostTable.cs" />
+    <Compile Remove="Data\Migrations\20200223183701_DropForumPostTable.Designer.cs" />
+    <Compile Remove="Data\Migrations\20200223183747_DropForumPostTable.cs" />
+    <Compile Remove="Data\Migrations\20200223183747_DropForumPostTable.Designer.cs" />
+    <Compile Remove="Data\Migrations\20200223184004_InitialForumMigrate.cs" />
+    <Compile Remove="Data\Migrations\20200223184004_InitialForumMigrate.Designer.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="3.1.2" />
     <PackageReference Include="Microsoft.AspNetCore.Blazor.Server" Version="3.1.0-preview4.19579.2" />
+    <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="3.1.2" />
+    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="3.1.2" />
+    <PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="3.1.2" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="3.1.2" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="3.1.2" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="3.1.2">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="3.1.2" />
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="3.1.1" />
   </ItemGroup>
-
   <ItemGroup>
     <ProjectReference Include="..\Client\ForumSPA.Client.csproj" />
     <ProjectReference Include="..\Shared\ForumSPA.Shared.csproj" />
   </ItemGroup>
-
 </Project>
