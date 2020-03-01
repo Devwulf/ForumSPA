@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using ForumSPA.Server.Authorization;
 using ForumSPA.Server.Data.Models;
 using ForumSPA.Shared.Models.Identity;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -16,6 +17,7 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace ForumSPA.Server.Controllers.Identity
 {
+    [AllowAnonymous]
     [Route("api/[controller]/[action]")]
     [ApiController]
     public class AccountController : ControllerBase

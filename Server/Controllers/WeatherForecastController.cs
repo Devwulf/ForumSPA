@@ -10,8 +10,9 @@ using ForumSPA.Server.Authorization;
 
 namespace ForumSPA.Server.Controllers
 {
-    [ApiController]
+    [AllowAnonymous]
     [Route("[controller]")]
+    [ApiController]
     public class WeatherForecastController : ControllerBase
     {
         private static readonly string[] Summaries = new[]
@@ -27,7 +28,6 @@ namespace ForumSPA.Server.Controllers
         }
 
         [HttpGet]
-        [Authorize(Roles = ForumConstants.AdministratorRole)]
         public IEnumerable<WeatherForecast> Get()
         {
             var rng = new Random();

@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>ForumSPA.Server</name>
+    </assembly>
+    <members>
+        <member name="M:ForumSPA.Server.Controllers.ForumController.GetHubModels">
+            <summary>
+            Gets the list of hubs in HubModel form.
+            </summary>
+            <returns>A GenericGetResult that contains the list of hubs in HubModel form.</returns>
+        </member>
+        <member name="M:ForumSPA.Server.Controllers.ForumController.CreateHub(ForumSPA.Shared.Models.HubModel)">
+            <summary>
+            Creates a new Hub.
+            </summary>
+            <remarks>
+            Sample request:
+            
+                POST api/Forum/hub
+                {
+                    "name": "Fight Club",
+                    "rules": "1. You do NOT talk about Fight Club",
+                    "description": "Fight!"
+                }
+            </remarks>
+            <param name="model"></param>
+            <returns></returns>
+        </member>
+    </members>
+</doc>
