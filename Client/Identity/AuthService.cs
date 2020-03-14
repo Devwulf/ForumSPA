@@ -16,11 +16,11 @@ namespace ForumSPA.Client.Identity
     public class AuthService : IAuthService
     {
         private readonly HttpClient _httpClient;
-        private readonly AuthenticationStateProvider _authenticationStateProvider;
+        private readonly ApiAuthenticationStateProvider _authenticationStateProvider;
         private readonly ILocalStorageService _localStorage;
 
         public AuthService(HttpClient httpClient,
-                           AuthenticationStateProvider authenticationStateProvider,
+                           ApiAuthenticationStateProvider authenticationStateProvider,
                            ILocalStorageService localStorage)
         {
             _httpClient = httpClient;

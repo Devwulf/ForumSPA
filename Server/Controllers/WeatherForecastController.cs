@@ -10,7 +10,6 @@ using ForumSPA.Server.Authorization;
 
 namespace ForumSPA.Server.Controllers
 {
-    [AllowAnonymous]
     [Route("[controller]")]
     [ApiController]
     public class WeatherForecastController : ControllerBase

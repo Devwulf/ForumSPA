@@ -1,5 +1,5 @@
 ﻿@page "/fetchdata"
-@attribute [Authorize(Roles = "Administrator")]
+@attribute [Authorize]
 @using ForumSPA.Shared
 @inject HttpClient Http
 
@@ -41,6 +41,7 @@ else
 
     protected override async Task OnInitializedAsync()
     {
+
         forecasts = await Http.GetJsonAsync<WeatherForecast[]>("WeatherForecast");
     }
 

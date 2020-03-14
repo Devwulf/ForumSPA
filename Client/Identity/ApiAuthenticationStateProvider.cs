@@ -1,4 +1,5 @@
 ﻿using Blazored.LocalStorage;
+using ForumSPA.Shared.Utils;
 using Microsoft.AspNetCore.Components.Authorization;
 using System;
 using System.Collections.Generic;
@@ -26,16 +27,26 @@ namespace ForumSPA.Client.Identity
         public override async Task<AuthenticationState> GetAuthenticationStateAsync()
         {
             var savedToken = await _localStorage.GetItemAsync<string>("authToken");
+            var anonymousState = new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity()));
 
             // Not authenticated
             if (string.IsNullOrWhiteSpace(savedToken))
             {
-                return new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity()));
+                return anonymousState;
             }
+
+            var claims = ParseClaimsFromJwt(savedToken);
+            var expiry = claims.Where(claim => claim.Type.Equals("exp")).FirstOrDefault();
+            if (expiry == null)
+                return anonymousState;
+
+            var datetime = DateTimeOffset.FromUnixTimeSeconds(long.Parse(expiry.Value));
+            if (datetime.UtcDateTime <= DateTime.Now)
+                return anonymousState;
 
             _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("bearer", savedToken);
 
-            return new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity(ParseClaimsFromJwt(savedToken), "jwt")));
+            return new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity(claims, "jwt")));
         }
 
         public void MarkUserAsAuthenticated(string token)

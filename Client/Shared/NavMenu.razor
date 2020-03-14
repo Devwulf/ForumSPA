@@ -1,55 +1,170 @@
-﻿<div class="top-row pl-4 navbar navbar-dark">
-    <a class="navbar-brand" href="">ForumSPA</a>
-    <button class="navbar-toggler" @onclick="ToggleNavMenu">
-        <span class="navbar-toggler-icon"></span>
-    </button>
-</div>
+﻿@using System.Security.Claims
+@inject HttpClient HttpClient
 
-<div class="@NavMenuCssClass" @onclick="ToggleNavMenu">
-    <ul class="nav flex-column">
+<div class="sidebar @NavMenuCssClass">
+    <div class="top-row navbar navbar-dark">
+        <a class="navbar-brand" href="">ForumSPA</a>
+        <button class="navbar-toggler" @onclick="ToggleNavMenu">
+            <i class="fas fa-chevron-left fa-lg"></i>
+        </button>
         <AuthorizeView>
             <Authorized>
-                <li class="nav-item px-3">
-                    <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
-                        <i class="fas fa-home fa-lg"></i> Home
+                <div class="user-info row no-gutters" style="color: white">
+                    <div class="user-icon col-3">
+                        <i class="fas fa-chess-knight fa-3x"></i>
+                    </div>
+                    <div class="col-6">
+                        @if (User != null)
+                        {
+                            <div class="user-name">
+                                @User.Identity.Name
+                            </div>
+                            <div class="user-role c-h7">
+                                @Role
+                            </div>
+                        }
+                    </div>
+                </div>
+                <div class="user-options row no-gutters text-center" style="color: white">
+                    <NavLink class="user-options-icon col-20" href="logout">
+                        <i class="fas fa-comments fa-lg"></i>
                     </NavLink>
-                </li>
-                <li class="nav-item px-3">
-                    <NavLink class="nav-link" href="counter">
-                        <i class="fas fa-plus fa-lg"></i> Counter
+                    <NavLink class="user-options-icon col-20" href="logout">
+                        <i class="fas fa-envelope fa-lg"></i>
                     </NavLink>
-                </li>
-                <li class="nav-item px-3">
-                    <NavLink class="nav-link" href="fetchdata">
-                        <i class="fas fa-list fa-lg"></i> Fetch data
+                    <NavLink class="user-options-icon col-20" href="logout">
+                        <i class="fas fa-user fa-lg"></i>
                     </NavLink>
-                </li>
-                <li class="nav-item px-3">
-                    <NavLink class="nav-link" href="logout">
-                        <i class="fas fa-sign-out-alt fa-lg"></i> Logout
+                    <NavLink class="user-options-icon col-20" href="logout">
+                        <i class="fas fa-sign-out-alt fa-lg"></i>
                     </NavLink>
-                </li>
+                </div>
             </Authorized>
             <NotAuthorized>
-                <li class="nav-item px-3">
-                    <NavLink class="nav-link" href="register">
-                        <i class="fas fa-user-plus fa-lg"></i> Register
+                <div class="auth-options-item px-3">
+                    <NavLink class="nav-link no-padding-vertical" href="register">
+                        <i class="fas fa-user-plus fa-lg"></i> &nbsp; Register
                     </NavLink>
-                </li>
-                <li class="nav-item px-3">
-                    <NavLink class="nav-link" href="login">
-                        <i class="fas fa-sign-in-alt fa-lg"></i> Login
+                </div>
+                <div class="auth-options-item px-3">
+                    <NavLink class="nav-link no-padding-vertical" href="login">
+                        <i class="fas fa-sign-in-alt fa-lg"></i> &nbsp; Login
                     </NavLink>
-                </li>
+                </div>
             </NotAuthorized>
         </AuthorizeView>
-    </ul>
+    </div>
+
+    <div class="hubs">
+        <ul class="nav flex-column">
+            <AuthorizeView>
+                <Authorized>
+                    @*
+                    <li class="nav-item px-3">
+                        <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
+                            <i class="fas fa-home fa-lg"></i> Home
+                        </NavLink>
+                    </li>
+                    *@
+
+                    @foreach (var hub in hubs)
+                    {
+                        <li class="nav-item px-3">
+                            <NavLink class="nav-link" href='@string.Format("forum?hubId={0}", hub.Id)'>
+                                <p class="hub-name c-h4 no-margin">@hub.Name</p>
+                                <p class="hub-count c-h7 no-margin">@hub.ThreadCount Threads</p>
+                            </NavLink>
+                        </li>
+                    }
+                </Authorized>
+            </AuthorizeView>
+        </ul>
+    </div>
+</div>
+
+<div class="sidebar-collapse @CollapsedCssClass">
+    <div class="top-row navbar navbar-dark">
+        <button class="navbar-toggler" @onclick="ToggleNavMenu">
+            <i class="fas fa-chevron-right fa-lg"></i>
+        </button>
+        <AuthorizeView>
+            <Authorized>
+                <div class="user-options text-center" style="color: white">
+                    <NavLink class="user-options-icon" href="logout">
+                        <i class="fas fa-comments fa-lg"></i>
+                    </NavLink>
+                    <NavLink class="user-options-icon" href="logout">
+                        <i class="fas fa-envelope fa-lg"></i>
+                    </NavLink>
+                    <NavLink class="user-options-icon" href="logout">
+                        <i class="fas fa-user fa-lg"></i>
+                    </NavLink>
+                    <NavLink class="user-options-icon" href="logout">
+                        <i class="fas fa-sign-out-alt fa-lg"></i>
+                    </NavLink>
+                </div>
+            </Authorized>
+            <NotAuthorized>
+                <div class="auth-options text-center">
+                    <NavLink href="register">
+                        <i class="fas fa-user-plus fa-lg"></i>
+                    </NavLink>
+                    <NavLink href="login">
+                        <i class="fas fa-sign-in-alt fa-lg"></i>
+                    </NavLink>
+                </div>
+            </NotAuthorized>
+        </AuthorizeView>
+    </div>
+
+    <div class="hubs">
+        <ul class="nav flex-column">
+            <AuthorizeView>
+                <Authorized>
+                    @*
+                        <li class="nav-item px-3">
+                            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
+                                <i class="fas fa-home fa-lg"></i> Home
+                            </NavLink>
+                        </li>
+                    *@
+
+                    @foreach (var hub in hubs)
+                    {
+                        <li class="nav-item px-2">
+                            <NavLink class="nav-link" href='@string.Format("forum?hubId={0}", hub.Id)'>
+                                <p class="hub-name c-h4 no-margin">@hub.Name.Substring(0, 1)</p>
+                            </NavLink>
+                        </li>
+                    }
+                </Authorized>
+            </AuthorizeView>
+        </ul>
+    </div>
 </div>
 
 @code {
-    private bool collapseNavMenu = true;
+    private bool collapseNavMenu = false;
+    private List<HubModel> hubs = new List<HubModel>();
+
+    [CascadingParameter]
+    private Task<AuthenticationState> authStateTask { get; set; }
+    private ClaimsPrincipal User;
+    private string Role;
 
     private string NavMenuCssClass => collapseNavMenu ? "collapse" : null;
+    private string CollapsedCssClass => collapseNavMenu ? null : "collapse";
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await authStateTask;
+        User = authState.User;
+        Role = User.IsInRole("Administrator") ? "Administrator" : "User";
+
+        var result = await HttpClient.GetJsonAsync<GenericGetResult<List<HubModel>>>("api/forum/hubs");
+        if (result.Succeeded)
+            hubs = result.Value;
+    }
 
     private void ToggleNavMenu()
     {

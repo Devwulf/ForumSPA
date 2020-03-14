@@ -1,7 +1,45 @@
 ﻿@page "/forum"
+@using Microsoft.AspNetCore.WebUtilities
+@implements IDisposable
+@inject NavigationManager NavManager
+@inject ApiAuthenticationStateProvider AuthProvider
+@attribute [Authorize]
 
 <h3>MainForum</h3>
+<hr />
+
+<p>Hub Id: @hubId</p>
+<p>Thread Id: @threadId</p>
+<p>Post Id: @postId</p>
 
 @code {
+    private int hubId { get; set; }
+    private int threadId { get; set; }
+    private int postId { get; set; }
 
+    private void OnLocationChanged(object sender, LocationChangedEventArgs e) => RefreshParams();
+
+    protected override void OnInitialized()
+    {
+        NavManager.LocationChanged += OnLocationChanged;
+
+        RefreshParams();
+    }
+
+    private void RefreshParams()
+    {
+        var uri = new Uri(NavManager.Uri);
+        var query = QueryHelpers.ParseQuery(uri.Query);
+
+        hubId = query.TryGetValue("hubId", out var hubStr) ? (int.TryParse(hubStr.First(), out int hubInt) ? hubInt : -1) : -1;
+        threadId = query.TryGetValue("threadId", out var threadStr) ? (int.TryParse(threadStr.First(), out int threadInt) ? threadInt : -1) : -1;
+        postId = query.TryGetValue("postId", out var postStr) ? (int.TryParse(postStr.First(), out int postInt) ? postInt : -1) : -1;
+
+        StateHasChanged();
+    }
+
+    public void Dispose()
+    {
+        NavManager.LocationChanged -= OnLocationChanged;
+    }
 }

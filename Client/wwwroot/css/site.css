@@ -21,9 +21,7 @@ app {
 }
 
 .top-row {
-    height: 3.5rem;
-    display: flex;
-    align-items: center;
+    height: 14rem;
 }
 
 .main {
@@ -52,22 +50,66 @@ app {
 
     .sidebar .top-row {
         background-color: rgba(0,0,0,0.4);
+        box-shadow: 0px 20px 60px rgba(0, 0, 0, 0.25);
+    }
+
+    .sidebar .navbar {
+        display: block;
+        padding-top: 1rem;
     }
 
     .sidebar .navbar-brand {
-        font-size: 1.1rem;
+        font-size: 1.5rem;
+        padding-top: 0;
+        padding-bottom: 0.65rem;
     }
 
+    .sidebar .user-info {
+        margin-top: 0.75rem;
+        margin-bottom: 1.75rem;
+    }
+
+    .sidebar .navbar-brand, .sidebar .user-info {
+        margin-left: 1rem;
+    }
+
+    .sidebar .user-icon {
+        padding-left: 0rem;
+    }
+
+    .sidebar .user-name {
+        padding-top: 0.45rem;
+    }
+
+    .user-name, .user-role {
+        padding-left: .5rem;
+        font-weight: 500;
+    }
+
+    .sidebar .user-options a {
+        color: #ffffff;
+        margin-left: 0.25rem;
+        margin-right: 0.25rem;
+        padding-top: 0.25rem;
+        padding-bottom: 0.25rem;
+        border-radius: 2px;
+    }
+
+        .sidebar .user-options a:hover {
+            background-color: #ffffff;
+            color: #130d34
+        }
+
     .sidebar .fas {
-        width: 2rem;
-        font-size: 1.1rem;
         vertical-align: text-top;
         top: -2px;
     }
 
     .sidebar .nav-item {
         font-size: 0.9rem;
-        padding-bottom: 0.5rem;
+        padding-bottom: 1rem;
+        margin-left: 1rem;
+        position: relative;
     }
 
         .sidebar .nav-item:first-of-type {
@@ -81,8 +123,6 @@ app {
         .sidebar .nav-item a {
             color: #d7d7d7;
             border-radius: 4px;
-            height: 3rem;
-            display: flex;
             align-items: center;
             line-height: 3rem;
         }
@@ -90,19 +130,224 @@ app {
             .sidebar .nav-item a.active {
                 background-color: rgba(255,255,255,0.25);
                 color: white;
+                font-weight: 600;
+            }
+
+            .sidebar .hubs .nav-item a.active {
+                background-color: rgba(255,255,255,0);
+            }
+
+                /* Triangle pointing to selected hub from the right */
+                .sidebar .hubs .nav-item a.active::after {
+                    content: "";
+                    display: block;
+                    position: absolute;
+                    width: 194px;
+                    height: 0;
+                    top: 5px;
+                    border-style: solid;
+                    border-width: 15px 15px 15px 0;
+                    border-color: transparent #ffffff transparent transparent;
+                }
+
+                .sidebar .hubs .nav-item:first-of-type a.active::after {
+                    top: 21px;
+                }
+
+            .sidebar .hubs .nav li:first-of-type {
+                margin-top: 30px;
+            }
+
+            /* White bar to the left of the hub currently hovered on */
+            .sidebar .nav-item a:hover::before {
+                content: "";
+                display: block;
+                position: absolute;
+                height: 45.2px;
+                width: 10px;
+                left: -19px;
+                border-radius: 4px;
+                border-style: solid;
+                border-width: 0 7px 0 0;
+                border-color: transparent #ffffff transparent transparent;
             }
 
             .sidebar .nav-item a:hover {
-                background-color: rgba(255,255,255,0.1);
                 color: white;
             }
+
+    .sidebar .auth-options-item {
+        font-size: 0.9rem;
+        padding-bottom: 0.5rem;
+    }
+
+    .sidebar .auth-options-item:first-of-type {
+        padding-top: 1rem;
+    }
+
+    .sidebar .auth-options-item:last-of-type {
+        padding-bottom: 1rem;
+    }
+
+    .sidebar .auth-options-item a {
+        color: #d7d7d7;
+        border-radius: 4px;
+        align-items: center;
+        line-height: 3rem;
+    }
+
+        .sidebar .auth-options-item a.active {
+            background-color: rgba(255,255,255,0.25);
+            color: white;
+            font-weight: 600;
+        }
+
+        .sidebar .auth-options-item a:hover {
+            background-color: rgba(255,255,255,0.1);
+            color: white;
+        }
+
+.sidebar-collapse {
+    background-image: linear-gradient(180deg, rgb(5, 39, 103) 0%, #3a0647 70%);
+}
+
+    .sidebar-collapse .top-row {
+        background-color: rgba(0,0,0,0.4);
+        padding-left: 0.75rem;
+        padding-right: 0.75rem;
+    }
+
+    .sidebar-collapse .navbar {
+        display: block;
+        padding-top: 1rem;
+    }
+
+    .sidebar-collapse .user-options a {
+        display: block;
+        color: #ffffff;
+        padding: 0.25rem 0.25rem;
+        border-radius: 2px;
+        margin-bottom: 0.4rem;
+    }
+
+    .sidebar-collapse .user-options a:first-of-type {
+        margin-top: 0.5rem;
+    }
+
+        .sidebar-collapse .user-options a:hover {
+            background-color: #ffffff;
+            color: #130d34
+        }
+
+    .sidebar-collapse .nav-item {
+        font-size: 0.9rem;
+        padding-bottom: 1rem;
+        margin-left: 1rem;
+        position: relative;
+    }
+
+        .sidebar-collapse .nav-item:first-of-type {
+            padding-top: 1rem;
+        }
+
+        .sidebar-collapse .nav-item:last-of-type {
+            padding-bottom: 1rem;
+        }
+
+        .sidebar-collapse .nav-item a {
+            color: #d7d7d7;
+            border-radius: 4px;
+            align-items: center;
+            line-height: 3rem;
+        }
+
+            .sidebar-collapse .nav-item a.active {
+                background-color: rgba(255,255,255,0.25);
+                color: white;
+                font-weight: 600;
+            }
+
+            .sidebar-collapse .hubs .nav-item a.active {
+                background-color: rgba(255,255,255,0);
+            }
+
+                /* Triangle pointing to selected hub from the right */
+                .sidebar-collapse .hubs .nav-item a.active::after {
+                    content: "";
+                    display: block;
+                    position: absolute;
+                    width: 41px;
+                    height: 0;
+                    top: 4px;
+                    border-style: solid;
+                    border-width: 10px 10px 10px 0;
+                    border-color: transparent #ffffff transparent transparent;
+                }
+
+                .sidebar-collapse .hubs .nav-item:first-of-type a.active::after {
+                    top: 20px;
+                }
+
+            .sidebar-collapse .hubs .nav li:first-of-type {
+                margin-top: 30px;
+            }
+
+            /* White bar to the left of the hub currently hovered on */
+            .sidebar-collapse .nav-item a:hover::before {
+                content: "";
+                display: block;
+                position: absolute;
+                height: 28.8px;
+                width: 10px;
+                left: -19px;
+                border-radius: 4px;
+                border-style: solid;
+                border-width: 0 6px 0 0;
+                border-color: transparent #ffffff transparent transparent;
+            }
+
+            .sidebar-collapse .nav-item a:hover {
+                color: white;
+            }
+
+    .sidebar-collapse .auth-options a {
+        display: block;
+        color: #ffffff;
+        padding: 0.25rem 0.25rem;
+        border-radius: 2px;
+        margin-bottom: 1.5rem;
+    }
+
+        .sidebar-collapse .auth-options a:first-of-type {
+            margin-top: 2rem;
+        }
+
+        .sidebar-collapse .auth-options a:hover {
+            background-color: #ffffff;
+            color: #130d34
+        }
+
+.fas {
+    width: 1.5rem;
+}
 
 .content {
     padding-top: 1.1rem;
 }
 
+.nav-link {
+    display: block;
+    padding: 0;
+}
+
 .navbar-toggler {
-    background-color: rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 1) !important;
+    border-width: 0;
+}
+
+.navbar-toggler:hover {
+    color: #06153c !important;
+    background-color: rgba(255, 255, 255, 1);
 }
 
 .valid.modified:not([type=checkbox]) {
@@ -156,10 +401,15 @@ app {
     }
 
     .sidebar {
-        width: 250px;
+        width: 225px;
         height: 100vh;
         position: sticky;
         top: 0;
+    }
+
+    .sidebar-collapse {
+        width: 65.3333px;
+        height: 100vh;
     }
 
     .main .top-row {
@@ -173,12 +423,12 @@ app {
     }
 
     .navbar-toggler {
-        display: none;
+        padding: 0.5rem 0.5rem;
     }
 
-    .sidebar .collapse {
+    .collapse {
         /* Never collapse the sidebar for wide screens */
-        display: block;
+        display: none;
     }
 }
 
@@ -193,4 +443,33 @@ app {
 
 .no-padding {
     padding: 0;
+}
+
+.no-padding-vertical {
+    padding-top: 0;
+    padding-bottom: 0;
+}
+
+.no-margin {
+    margin: 0;
+}
+
+.c-h4 {
+    font-size: 1.5rem;
+}
+
+.c-h6 {
+    font-size: 1rem;
+}
+
+.c-h7 {
+    font-size: 0.75rem;
+}
+
+.c-h4, .c-h6, .c-h7 {
+    line-height: 1.2;
+}
+
+.col-20 {
+    flex: 0 0 20%;
 }

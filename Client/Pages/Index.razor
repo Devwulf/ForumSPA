@@ -1,7 +1,22 @@
 ﻿@page "/"
+@using System.Net.Http
+@inject HttpClient HttpClient
 
 <h1>Hello, world!</h1>
 
 Welcome to your new app.
 
 <SurveyPrompt Title="How is Blazor working for you?" />
+
+<p>@Username</p>
+
+@code {
+    private string Username;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var response = await HttpClient.GetAsync("api/forum/user");
+        if (response.IsSuccessStatusCode)
+            Username = await response.Content.ReadAsStringAsync();
+    }
+}

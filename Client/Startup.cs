@@ -12,7 +12,9 @@ namespace ForumSPA.Client
         {
             services.AddBlazoredLocalStorage();
             services.AddAuthorizationCore();
-            services.AddScoped<AuthenticationStateProvider, ApiAuthenticationStateProvider>();
+
+            services.AddScoped<ApiAuthenticationStateProvider>();
+            services.AddScoped<AuthenticationStateProvider>(provider => provider.GetRequiredService<ApiAuthenticationStateProvider>());
             services.AddScoped<IAuthService, AuthService>();
         }
 
