@@ -1,6 +1,7 @@
 ﻿@page "/"
 @using System.Net.Http
 @inject HttpClient HttpClient
+@attribute [Authorize]
 
 <h1>Hello, world!</h1>
 
@@ -8,7 +9,7 @@ Welcome to your new app.
 
 <SurveyPrompt Title="How is Blazor working for you?" />
 
-<p>@Username</p>
+@*<p>@Username</p>*@
 
 @code {
     private string Username;

@@ -3,36 +3,81 @@
 @implements IDisposable
 @inject NavigationManager NavManager
 @inject ApiAuthenticationStateProvider AuthProvider
+@inject HttpClient HttpClient
 
-<h3>MainForum</h3>
-<hr />
 
-<p>Hub Id: @hubId</p>
-<p>Thread Id: @threadId</p>
-<p>Post Id: @postId</p>
+@if (hubId > 0 && hub != null)
+{
+    <h3>@hub.Name</h3>
+    <hr />
+
+    <ul class="threads nav flex-column">
+
+    @foreach (var thread in threads)
+    {
+        <li class="nav-item mb-3">
+            <NavLink class="card nav-link" href='@string.Format("forum?hubId={0}&threadId={1}", hubId, thread.Id)'>
+                <div class="card-body">
+                    <h5 class="card-title text-left font-weight-bold">
+                        @thread.Name
+                    </h5>
+                    <div class="card-text text-left font-weight-light">
+                        by @thread.UserName &nbsp;
+                        <strong class="font-weight-bold">&#183;</strong> &nbsp;
+                        @thread.ReplyCount Replies &nbsp;
+                        <strong class="font-weight-bold">&#183;</strong> &nbsp;
+                        Last Reply: @thread.DateModified
+                    </div>
+                </div>
+            </NavLink>
+        </li>
+    }
+
+    </ul>
+}
 
 @code {
     private int hubId { get; set; }
     private int threadId { get; set; }
     private int postId { get; set; }
 
-    private void OnLocationChanged(object sender, LocationChangedEventArgs e) => RefreshParams();
+    private async void OnLocationChanged(object sender, LocationChangedEventArgs e) => await RefreshParams();
 
-    protected override void OnInitialized()
+    private HubModel hub;
+    private List<ThreadModel> threads;
+
+    protected override async Task OnInitializedAsync()
     {
         NavManager.LocationChanged += OnLocationChanged;
 
-        RefreshParams();
+        await RefreshParams();
     }
 
-    private void RefreshParams()
+    private async Task RefreshParams()
     {
+        hub = null;
+        threads = new List<ThreadModel>();
+
         var uri = new Uri(NavManager.Uri);
         var query = QueryHelpers.ParseQuery(uri.Query);
 
         hubId = query.TryGetValue("hubId", out var hubStr) ? (int.TryParse(hubStr.First(), out int hubInt) ? hubInt : -1) : -1;
         threadId = query.TryGetValue("threadId", out var threadStr) ? (int.TryParse(threadStr.First(), out int threadInt) ? threadInt : -1) : -1;
         postId = query.TryGetValue("postId", out var postStr) ? (int.TryParse(postStr.First(), out int postInt) ? postInt : -1) : -1;
+
+        if (hubId > 0)
+        {
+            var result = await HttpClient.GetJsonAsync<GenericGetResult<HubModel>>($"api/forum/hub/{hubId}");
+            if (result.Succeeded)
+                hub = result.Value;
+        }
+
+        if (hub != null)
+        {
+            var result = await HttpClient.GetJsonAsync<GenericGetResult<List<ThreadModel>>>($"api/forum/threads/{hub.Id}");
+            if (result.Succeeded)
+                threads = result.Value;
+        }
 
         StateHasChanged();
     }

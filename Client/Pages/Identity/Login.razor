@@ -47,7 +47,9 @@
 
         if (result.Succeeded)
         {
-            NavManager.NavigateTo("/", true);
+            // No need to forceLoad, just add listener to NotifyStateChange event 
+            // in AuthService for components that needed to be updated after login
+            NavManager.NavigateTo("/");
         }
         else
         {

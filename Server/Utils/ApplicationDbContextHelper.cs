@@ -25,7 +25,7 @@ namespace ForumSPA.Server.Utils
                     }
                     else
                     {
-                        // We don't want DateCreated to change when 
+                        // We don't want DateCreated to change when modified
                         entry.Property("DateCreated").IsModified = false;
                     }
 

@@ -1,5 +1,7 @@
 ﻿@using System.Security.Claims
+@implements IDisposable
 @inject HttpClient HttpClient
+@inject IAuthService AuthService
 
 <div class="sidebar @NavMenuCssClass">
     <div class="top-row navbar navbar-dark">
@@ -149,17 +151,29 @@
 
     protected override async Task OnInitializedAsync()
     {
-        var authState = await authStateTask;
-        User = authState.User;
-        Role = User.IsInRole("Administrator") ? "Administrator" : "User";
+        AuthService.OnStateChange += OnAuthStateChanged;
+        await OnAuthStateChanged();
 
         var result = await HttpClient.GetJsonAsync<GenericGetResult<List<HubModel>>>("api/forum/hubs");
         if (result.Succeeded)
             hubs = result.Value;
     }
 
+    private async Task OnAuthStateChanged()
+    {
+        var authState = await authStateTask;
+        User = authState.User;
+        Role = User.IsInRole("Administrator") ? "Administrator" : "User";
+        StateHasChanged();
+    }
+
     private void ToggleNavMenu()
     {
         collapseNavMenu = !collapseNavMenu;
+    }
+
+    public void Dispose()
+    {
+        AuthService.OnStateChange -= OnAuthStateChanged;
     }
 }

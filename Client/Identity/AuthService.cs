@@ -15,6 +15,8 @@ namespace ForumSPA.Client.Identity
 {
     public class AuthService : IAuthService
     {
+        public event Func<Task> OnStateChange;
+
         private readonly HttpClient _httpClient;
         private readonly ApiAuthenticationStateProvider _authenticationStateProvider;
         private readonly ILocalStorageService _localStorage;
@@ -66,6 +68,8 @@ namespace ForumSPA.Client.Identity
             await _localStorage.SetItemAsync("authToken", result.Token);
             ((ApiAuthenticationStateProvider)_authenticationStateProvider).MarkUserAsAuthenticated(result.Token);
             _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("bearer", result.Token);
+            
+            await NotifyStateChange();
 
             return result;
         }
@@ -75,6 +79,23 @@ namespace ForumSPA.Client.Identity
             await _localStorage.RemoveItemAsync("authToken");
             ((ApiAuthenticationStateProvider)_authenticationStateProvider).MarkUserAsLoggedOut();
             _httpClient.DefaultRequestHeaders.Authorization = null;
+
+            await NotifyStateChange();
+        }
+
+        private async Task NotifyStateChange()
+        {
+            var handler = OnStateChange;
+            if (handler == null)
+                return;
+
+            var invokeList = handler.GetInvocationList();
+            var tasks = new Task[invokeList.Length];
+
+            for (int i = 0; i < invokeList.Length; i++)
+                tasks[i] = ((Func<Task>)invokeList[i])();
+
+            await Task.WhenAll(tasks);
         }
     }
 }
