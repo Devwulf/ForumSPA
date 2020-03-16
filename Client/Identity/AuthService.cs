@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 
 namespace ForumSPA.Client.Identity
 {
-    public class AuthService : IAuthService
+    public class AuthService : IAuthService, IStageChangeAsync
     {
         public event Func<Task> OnStateChange;
 
@@ -83,7 +83,7 @@ namespace ForumSPA.Client.Identity
             await NotifyStateChange();
         }
 
-        private async Task NotifyStateChange()
+        public async Task NotifyStateChange()
         {
             var handler = OnStateChange;
             if (handler == null)

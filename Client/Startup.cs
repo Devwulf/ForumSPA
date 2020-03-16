@@ -15,7 +15,10 @@ namespace ForumSPA.Client
 
             services.AddScoped<ApiAuthenticationStateProvider>();
             services.AddScoped<AuthenticationStateProvider>(provider => provider.GetRequiredService<ApiAuthenticationStateProvider>());
-            services.AddScoped<IAuthService, AuthService>();
+            services.AddScoped<AuthService>();
+            services.AddScoped<IAuthService>(provider => provider.GetRequiredService<AuthService>());
+            // TODO: Check this link for multiple implementations of the same interface: https://stackoverflow.com/questions/39174989/how-to-register-multiple-implementations-of-the-same-interface-in-asp-net-core
+            services.AddScoped<IStageChangeAsync>(provider => provider.GetRequiredService<AuthService>());
         }
 
         public void Configure(IComponentsApplicationBuilder app)

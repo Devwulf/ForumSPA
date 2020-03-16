@@ -107,6 +107,7 @@ namespace ForumSPA.Server.Services
         {
             var posts = await (from p in _context.Posts
                                where p.ThreadId == threadId
+                               orderby p.DateCreated ascending
                                select p).ToListAsync();
             return posts;
         }
@@ -115,6 +116,7 @@ namespace ForumSPA.Server.Services
         {
             var posts = await (from p in _context.Posts
                                where p.UserId.Equals(userId)
+                               orderby p.DateCreated descending
                                select p).ToListAsync();
             return posts;
         }

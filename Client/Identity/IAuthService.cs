@@ -8,7 +8,6 @@ namespace ForumSPA.Client.Identity
 {
     public interface IAuthService
     {
-        event Func<Task> OnStateChange;
         Task<LoginResult> Login(LoginModel loginModel);
         Task Logout();
         Task<RegisterResult> Register(RegisterModel registerModel);

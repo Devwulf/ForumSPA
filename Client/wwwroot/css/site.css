@@ -346,7 +346,12 @@ app {
 }
 
 .content {
-    padding-top: 1.1rem;
+    padding-top: 2rem;
+    height: 100vh;
+}
+
+.forum-content {
+    height: 100%;
 }
 
 .nav-link {
@@ -433,7 +438,7 @@ app {
 
     .main > div {
         padding-left: 2rem !important;
-        padding-right: 1.5rem !important;
+        padding-right: 2rem !important;
     }
 
     .navbar-toggler {

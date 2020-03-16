@@ -85,6 +85,10 @@ namespace ForumSPA.Server.Controllers
                     threadModels.Add(model);
             }
 
+            threadModels = (from p in threadModels
+                            orderby p.DateModified descending
+                            select p).ToList();
+
             return Ok(new GenericGetResult<List<ThreadModel>>()
             {
                 Succeeded = true,
@@ -105,6 +109,10 @@ namespace ForumSPA.Server.Controllers
                 if (model != null)
                     threadModels.Add(model);
             }
+
+            threadModels = (from p in threadModels
+                            orderby p.DateModified descending
+                            select p).ToList();
 
             return Ok(new GenericGetResult<List<ThreadModel>>()
             {
@@ -583,7 +591,9 @@ namespace ForumSPA.Server.Controllers
             var user = await _userManager.FindByIdAsync(thread.UserId);
             var userName = user == null ? "<deleted>" : user.UserName;
 
-            var replyCount = (await _forumService.GetAllPostsByThread(thread.Id)).Count();
+            var posts = await _forumService.GetAllPostsByThread(thread.Id);
+            var replyCount = posts.Count();
+            var lastPost = posts.OrderByDescending(p => p.DateCreated).FirstOrDefault();
 
             return new ThreadModel()
             {
@@ -593,7 +603,7 @@ namespace ForumSPA.Server.Controllers
                 UserId = thread.UserId,
                 UserName = userName,
                 ReplyCount = replyCount - 1,
-                DateModified = thread.DateModified
+                DateModified = lastPost != null ? lastPost.DateCreated : thread.DateModified
             };
         }
 

@@ -20,6 +20,12 @@ namespace ForumSPA.Server.Data
         public DbSet<Thread> Threads { get; set; }
         public DbSet<Post> Posts { get; set; }
 
+        public override int SaveChanges()
+        {
+            this.SyncEntitiesStatePreCommit();
+            return base.SaveChanges();
+        }
+
         public Task<int> SaveChangesAsync()
         {
             this.SyncEntitiesStatePreCommit();
