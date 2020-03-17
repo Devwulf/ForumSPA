@@ -1,9 +1,5 @@
 ﻿@import url('open-iconic/font/css/open-iconic-bootstrap.min.css');
 
-html, body {
-    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-}
-
 a, .btn-link {
     color: #0366d6;
 }
@@ -341,6 +337,22 @@ app {
         z-index: 4;
     }
 
+.user-link {
+    color: #0d1138;
+    font-weight: 700;
+}
+
+.post-options {
+    color: #0d1138;
+}
+
+.post-options:hover {
+    background-color: #0d1138;
+    border-radius: 4px;
+    color: #ffffff;
+    text-decoration: none;
+}
+
 .fas {
     width: 1.5rem;
 }
@@ -437,8 +449,8 @@ app {
     }
 
     .main > div {
-        padding-left: 2rem !important;
-        padding-right: 2rem !important;
+        padding-left: 2rem;
+        padding-right: 2rem;
     }
 
     .navbar-toggler {
@@ -461,7 +473,7 @@ app {
 }
 
 .no-padding {
-    padding: 0;
+    padding: 0 !important;
 }
 
 .no-padding-vertical {
@@ -491,4 +503,17 @@ app {
 
 .col-20 {
     flex: 0 0 20%;
+}
+
+.overflow-scroll {
+    overflow-y: scroll;
+}
+
+.profile-pic {
+    width: 50px;
+    height: 50px;
+    font-size: 50px;
+    padding: 0;
+    display: unset !important;
+    text-align: center;
 }

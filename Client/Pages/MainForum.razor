@@ -7,7 +7,7 @@
 
 
 <div class="row no-gutters h-100">
-    <div class="col-6">
+    <div class="col-6 p-5 overflow-scroll h-100">
         @if (hubId > 0 && hub != null)
         {
             <h3>@hub.Name</h3>
@@ -18,7 +18,7 @@
                 @foreach (var thread in threads)
                 {
                     <li class="nav-item mb-3">
-                        <NavLink class="card nav-link" href='@string.Format("forum?hubId={0}&threadId={1}", hubId, thread.Id)'>
+                        <NavLink class="card nav-link" href='@string.Format("forum?hubId={0}&threadId={1}", hub.Id, thread.Id)'>
                             <div class="card-body">
                                 <h5 class="card-title text-left font-weight-bold">
                                     @thread.Name
@@ -43,6 +43,38 @@
                 Select a hub on the left
             </div>
         }
+    </div>
+    <div class="col-6 p-5 overflow-scroll h-100">
+        <h3 class="font-weight-bold">Title</h3>
+        <hr />
+
+        <div class="post py-4">
+            <div class="row no-gutters mb-4" style="color: #0d1138;">
+                <img class="mr-3" src="http://getdrawings.com/free-icon/icon-50x50-55.png" height="50" width="50"/>
+                <div class="col-6">
+                    <div>Started by <a class="user-link" href="/">Devwulf</a></div>
+                    <div>on <strong>some date</strong></div>
+                </div>
+            </div>
+            
+            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed pharetra, urna id rhoncus feugiat, quam neque consectetur elit, eu interdum tortor sem ut arcu. Duis a massa sit amet lorem tincidunt facilisis sit amet lobortis tellus. Aliquam mollis magna at scelerisque sagittis. Fusce id ante eget velit vestibulum placerat ac sit amet justo. Vestibulum eu risus non lacus tincidunt auctor. Cras sodales posuere justo ac laoreet. Nunc tristique viverra dolor, vitae porttitor metus vehicula vitae. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; </p>
+            
+            <div class="row no-gutters mb-4 text-center">
+                <a class="post-options py-2 col-2" href="/">
+                    <i class="fas fa-reply"></i>
+                    Reply
+                </a>
+                <a class="post-options py-2 col-2" href="/">
+                    <i class="fas fa-quote-right"></i>
+                    Quote
+                </a>
+                <a class="post-options py-2 col-2" href="/">
+                    <i class="fas fa-exclamation-circle"></i>
+                    Report
+                </a>
+            </div>
+            <hr />
+        </div>
     </div>
 </div>
 

@@ -12,16 +12,19 @@
         <AuthorizeView>
             <Authorized>
                 <div class="user-info row no-gutters" style="color: white">
+                    @*
                     <div class="user-icon col-3">
                         <i class="fas fa-chess-knight fa-3x"></i>
                     </div>
+                    *@
+                    <img class="mr-2" src="http://getdrawings.com/free-icon/icon-50x50-55.png" height="50" width="50" />
                     <div class="col-6">
                         @if (User != null)
                         {
-                            <div class="user-name">
+                            <div class="pt-1">
                                 @User.Identity.Name
                             </div>
-                            <div class="user-role c-h7">
+                            <div class="c-h7">
                                 @Role
                             </div>
                         }
