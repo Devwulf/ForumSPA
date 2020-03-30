@@ -14,7 +14,7 @@ namespace ForumSPA.Client.Utils
         {
             var jsRuntime = app.Services.GetService(typeof(IJSRuntime));
             var browserLocale = ((IJSInProcessRuntime)jsRuntime).Invoke<string>("helperFunctions.getBrowserLocale");
-            var culture = new CultureInfo("en-ZA");
+            var culture = new CultureInfo(browserLocale);
 
             CultureInfo.DefaultThreadCurrentCulture = culture;
             CultureInfo.DefaultThreadCurrentUICulture = culture;

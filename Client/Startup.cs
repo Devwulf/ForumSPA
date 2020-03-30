@@ -1,3 +1,4 @@
+using Blazored.Localisation.Services;
 using Blazored.LocalStorage;
 using ForumSPA.Client.Identity;
 using ForumSPA.Client.Services;
@@ -35,6 +36,8 @@ namespace ForumSPA.Client
             //services.AddHttpClient<ForumClientService>()
             //        .ConfigurePrimaryHttpMessageHandler(provider => (HttpMessageHandler)Activator.CreateInstance(wasmHttpMessageHandlerType));
             services.AddScoped<ForumClientService>();
+
+            services.AddScoped<BrowserDateTimeProvider>();
         }
 
         public void Configure(IComponentsApplicationBuilder app)

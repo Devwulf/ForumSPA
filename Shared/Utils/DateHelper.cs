@@ -6,10 +6,15 @@ namespace ForumSPA.Shared.Utils
 {
     public static class DateHelper
     {
-        // TODO: The DateTime.Now is currently set to UTC time, have to wait until time localization is implemented
         public static string ToTimeSpan(DateTime dateTime)
         {
-            var span = DateTime.Now - dateTime;
+            return ToTimeSpan(dateTime, DateTime.Now);
+        }
+
+        // TODO: The DateTime.Now is currently set to UTC time, have to wait until time localization is implemented
+        public static string ToTimeSpan(DateTime dateTime, DateTime now)
+        {
+            var span = now - dateTime;
 
             int secs = (int)span.TotalSeconds;
             int mins = (int)span.TotalMinutes;

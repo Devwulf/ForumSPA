@@ -1,11 +1,13 @@
 ﻿@page "/forum"
 @using Microsoft.AspNetCore.WebUtilities
 @using System.Security.Claims 
-@using System.ComponentModel.DataAnnotations 
+@using System.ComponentModel.DataAnnotations
+@using Blazored.Localisation.Services 
 @implements IDisposable
 @inject NavigationManager NavManager
 @inject ForumClientService ForumService
 @inject IJSRuntime JSRuntime 
+@inject BrowserDateTimeProvider DateTimeProvider
 
 <div class="row no-gutters h-100">
     <div class="col-6 p-5 overflow-scroll h-100 scroller">
@@ -89,7 +91,7 @@
                                     <strong class="font-weight-bold">&#183;</strong> &nbsp;
                                     @Replies(thread.ReplyCount) &nbsp;
                                     <strong class="font-weight-bold">&#183;</strong> &nbsp;
-                                    Last Reply: @DateHelper.ToTimeSpan(thread.DateModified)
+                                    Last Reply: @DateHelper.ToTimeSpan(thread.DateModified, dateTime.Now)
                                 </div>
                             </div>
                         </NavLink>
@@ -125,7 +127,7 @@
                             {
                                 <a class="user-link font-weight-bold" href="/">@post.UserName</a>
                             }
-                            <div>on <strong>@DateHelper.ToTimeSpan(post.DateCreated)</strong></div>
+                            <div>on <strong>@DateHelper.ToTimeSpan(post.DateCreated, dateTime.Now)</strong></div>
                         </div>
                     </div>
 
@@ -188,8 +190,12 @@
     private SearchModel searchModel = new SearchModel();
     private ThreadModel threadModel = new ThreadModel();
 
+    private BrowserDateTime dateTime;
+
     protected override async Task OnInitializedAsync()
     {
+        dateTime = await DateTimeProvider.GetInstance();
+
         NavManager.LocationChanged += OnLocationChanged;
         await RefreshParams();
     }
