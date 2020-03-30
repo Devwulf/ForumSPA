@@ -1,7 +1,11 @@
 ﻿using Microsoft.AspNetCore.Blazor.Hosting;
+using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Serilog;
 using Serilog.Core;
 using System;
+using System.Globalization;
+using System.Threading.Tasks;
+using Toolbelt.Blazor.Extensions.DependencyInjection;
 
 namespace ForumSPA.Client
 {
@@ -23,7 +27,7 @@ namespace ForumSPA.Client
             }
             catch (Exception ex)
             {
-                Log.Fatal(ex, "An exception occured while creating thw WASM host.");
+                Log.Fatal(ex, "An exception occured while creating the WASM host.");
                 throw;
             }
         }

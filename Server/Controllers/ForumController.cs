@@ -46,6 +46,13 @@ namespace ForumSPA.Server.Controllers
             var hubModels = new List<HubModel>();
             var hubs = await _forumService.GetAllHubs();
 
+            if (!hubs.Any())
+                return Ok(new GenericGetResult<List<HubModel>>()
+                {
+                    Succeeded = false,
+                    Error = "No hubs exist or found."
+                });
+
             foreach (var hub in hubs)
             {
                 var model = await ConvertHubToHubModel(hub);
@@ -77,6 +84,15 @@ namespace ForumSPA.Server.Controllers
         {
             var threadModels = new List<ThreadModel>();
             var threads = await _forumService.GetAllThreadsByHub(hubId);
+
+            if (!threads.Any())
+            {
+                return Ok(new GenericGetResult<List<ThreadModel>>()
+                {
+                    Succeeded = false,
+                    Error = $"No threads found in hub of id '{hubId}'."
+                });
+            }
 
             foreach (var thread in threads)
             {

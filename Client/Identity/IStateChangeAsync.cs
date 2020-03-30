@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace ForumSPA.Client.Identity
 {
-    public interface IStageChangeAsync
+    public interface IStateChangeAsync
     {
         event Func<Task> OnStateChange;
         Task NotifyStateChange();

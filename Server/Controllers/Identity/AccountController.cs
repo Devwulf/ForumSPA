@@ -76,6 +76,7 @@ namespace ForumSPA.Server.Controllers.Identity
 
             // We want to add all the roles to our token
             var claims = new List<Claim>();
+            claims.Add(new Claim(ClaimTypes.NameIdentifier, user.Id));
             claims.Add(new Claim(ClaimTypes.Name, login.Username));
 
             foreach (var role in roles)

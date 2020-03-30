@@ -1,16 +1,77 @@
 ﻿@page "/forum"
 @using Microsoft.AspNetCore.WebUtilities
+@using System.Security.Claims 
+@using System.ComponentModel.DataAnnotations 
 @implements IDisposable
 @inject NavigationManager NavManager
-@inject ApiAuthenticationStateProvider AuthProvider
-@inject HttpClient HttpClient
-
+@inject ForumClientService ForumService
+@inject IJSRuntime JSRuntime 
 
 <div class="row no-gutters h-100">
-    <div class="col-6 p-5 overflow-scroll h-100">
+    <div class="col-6 p-5 overflow-scroll h-100 scroller">
         @if (hubId > 0 && hub != null)
         {
-            <h3>@hub.Name</h3>
+            <div class="row no-gutters mb-3">
+                <h3 class="col-6">@hub.Name</h3>
+                <div class="col-6 d-flex justify-content-end">
+                    <AuthorizeView Context="authContext">
+                        <Authorized>
+                            <button class="btn btn-success" type="button" data-toggle="modal" data-target="#newThreadModal">
+                                <i class="fas fa-plus"></i>
+                                New Thread
+                            </button>
+
+                            <!-- New Thread Modal, not usually shown -->
+                            <div id="newThreadModal" class="modal fade" tabindex="-1">
+                                <div class="modal-dialog modal-lg">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h4 class="modal-title">Create New Thread</h4>
+                                            <button type="button" class="close" data-dismiss="modal">
+                                                <span>&times;</span>
+                                            </button>
+                                        </div>
+
+                                        <EditForm Model="threadModel" OnValidSubmit="HandleNewThread">
+                                            <DataAnnotationsValidator />
+
+                                            <div class="modal-body">
+                                                <div class="form-group">
+                                                    <label for="titleInput">Title</label>
+                                                    <InputText id="titleInput" class="form-control" @bind-Value="threadModel.Name" placeholder="Enter title..." />
+                                                    <ValidationMessage For="@(() => threadModel.Name)" />
+                                                </div>
+                                                <div class="form-group">
+                                                    <label for="bodyInput">Body</label>
+                                                    <InputRichText Id="bodyInput" @bind-Value="threadModel.Body" />
+                                                    <ValidationMessage For="@(() => threadModel.Body)" />
+                                                </div>
+                                            </div>
+
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                                                <button type="submit" class="btn btn-primary">Create Thread</button>
+                                            </div>
+                                        </EditForm>
+                                    </div>
+                                </div>
+                            </div>
+                        </Authorized>
+                    </AuthorizeView>
+                </div>
+            </div>
+
+            <EditForm Model="searchModel" OnValidSubmit="HandleSearch">
+                <DataAnnotationsValidator />
+
+                <div class="input-group">
+                    <InputText class="form-control" @bind-Value="searchModel.SearchString" placeholder="Search..." />
+                    <div class="input-group-append">
+                        <button class="btn btn-primary" type="submit">Search</button>
+                    </div>
+                    <ValidationMessage For="@(() => searchModel.SearchString)" /> 
+                </div>
+            </EditForm>
             <hr />
 
             <ul class="threads nav flex-column">
@@ -26,9 +87,9 @@
                                 <div class="card-text text-left font-weight-light">
                                     by @thread.UserName &nbsp;
                                     <strong class="font-weight-bold">&#183;</strong> &nbsp;
-                                    @thread.ReplyCount Replies &nbsp;
+                                    @Replies(thread.ReplyCount) &nbsp;
                                     <strong class="font-weight-bold">&#183;</strong> &nbsp;
-                                    Last Reply: @thread.DateModified
+                                    Last Reply: @DateHelper.ToTimeSpan(thread.DateModified)
                                 </div>
                             </div>
                         </NavLink>
@@ -44,44 +105,78 @@
             </div>
         }
     </div>
-    <div class="col-6 p-5 overflow-scroll h-100">
-        <h3 class="font-weight-bold">Title</h3>
-        <hr />
-
-        <div class="post py-4">
-            <div class="row no-gutters mb-4" style="color: #0d1138;">
-                <img class="mr-3" src="http://getdrawings.com/free-icon/icon-50x50-55.png" height="50" width="50"/>
-                <div class="col-6">
-                    <div>Started by <a class="user-link" href="/">Devwulf</a></div>
-                    <div>on <strong>some date</strong></div>
-                </div>
-            </div>
-            
-            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed pharetra, urna id rhoncus feugiat, quam neque consectetur elit, eu interdum tortor sem ut arcu. Duis a massa sit amet lorem tincidunt facilisis sit amet lobortis tellus. Aliquam mollis magna at scelerisque sagittis. Fusce id ante eget velit vestibulum placerat ac sit amet justo. Vestibulum eu risus non lacus tincidunt auctor. Cras sodales posuere justo ac laoreet. Nunc tristique viverra dolor, vitae porttitor metus vehicula vitae. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; </p>
-            
-            <div class="row no-gutters mb-4 text-center">
-                <a class="post-options py-2 col-2" href="/">
-                    <i class="fas fa-reply"></i>
-                    Reply
-                </a>
-                <a class="post-options py-2 col-2" href="/">
-                    <i class="fas fa-quote-right"></i>
-                    Quote
-                </a>
-                <a class="post-options py-2 col-2" href="/">
-                    <i class="fas fa-exclamation-circle"></i>
-                    Report
-                </a>
-            </div>
+    <div class="col-6 p-5 overflow-scroll h-100 scroller">
+        @if (threadId > 0 && thread != null)
+        {
+            <h3 class="font-weight-bold">@thread.Name</h3>
             <hr />
-        </div>
+
+            @foreach (var post in posts)
+            {
+                <div class="post py-4">
+                    <div class="row no-gutters mb-4" style="color: #0d1138;">
+                        <img class="mr-3" src="http://getdrawings.com/free-icon/icon-50x50-55.png" height="50" width="50" />
+                        <div class="col-6">
+                            @if (post.IsMainPost)
+                            {
+                                <div>Started by <a class="user-link font-weight-bold" href="/">@post.UserName</a></div>
+                            }
+                            else
+                            {
+                                <a class="user-link font-weight-bold" href="/">@post.UserName</a>
+                            }
+                            <div>on <strong>@DateHelper.ToTimeSpan(post.DateCreated)</strong></div>
+                        </div>
+                    </div>
+
+                    <div class="ck-content mb-3">
+                        @((MarkupString)post.Body)
+                    </div>
+
+                    <div class="row no-gutters mb-4 text-center">
+                        <a class="post-options py-2 col-2" href="/">
+                            <i class="fas fa-reply"></i>
+                            Reply
+                        </a>
+                        <a class="post-options py-2 col-2" href="/">
+                            <i class="fas fa-quote-right"></i>
+                            Quote
+                        </a>
+                        <a class="post-options py-2 col-2" href="/">
+                            <i class="fas fa-exclamation-circle"></i>
+                            Report
+                        </a>
+                    </div>
+                    <hr />
+                </div>
+            }
+        }
+        else
+        {
+            <div class="d-flex h-100 justify-content-center align-items-center">
+                Select a thread on the left
+            </div>
+        }
     </div>
 </div>
 
 @code {
+    public class SearchModel
+    {
+        [Required]
+        [StringLength(10, MinimumLength = 2)]
+        public string SearchString { get; set; }
+    }
+
+    private AuthenticationState authContext;
+
+    [CascadingParameter]
+    private Task<AuthenticationState> authStateTask { get; set; }
+
     private int hubId { get; set; }
     private int threadId { get; set; }
     private int postId { get; set; }
+    private string threadSearch { get; set; }
 
     private async void OnLocationChanged(object sender, LocationChangedEventArgs e) => await RefreshParams();
 
@@ -90,17 +185,21 @@
     private ThreadModel thread;
     private List<PostModel> posts;
 
+    private SearchModel searchModel = new SearchModel();
+    private ThreadModel threadModel = new ThreadModel();
+
     protected override async Task OnInitializedAsync()
     {
         NavManager.LocationChanged += OnLocationChanged;
-
         await RefreshParams();
     }
 
     private async Task RefreshParams()
     {
         hub = null;
+        thread = null;
         threads = new List<ThreadModel>();
+        posts = new List<PostModel>();
 
         var uri = new Uri(NavManager.Uri);
         var query = QueryHelpers.ParseQuery(uri.Query);
@@ -108,33 +207,42 @@
         hubId = query.TryGetValue("hubId", out var hubStr) ? (int.TryParse(hubStr.First(), out int hubInt) ? hubInt : -1) : -1;
         threadId = query.TryGetValue("threadId", out var threadStr) ? (int.TryParse(threadStr.First(), out int threadInt) ? threadInt : -1) : -1;
         postId = query.TryGetValue("postId", out var postStr) ? (int.TryParse(postStr.First(), out int postInt) ? postInt : -1) : -1;
+        threadSearch = query.TryGetValue("threadSearch", out var searchStr) ? searchStr.ToString() : null;
 
         if (hubId > 0)
         {
-            var result = await HttpClient.GetJsonAsync<GenericGetResult<HubModel>>($"api/forum/hub/{hubId}");
+            var result = await ForumService.GetHub(hubId);
             if (result.Succeeded)
                 hub = result.Value;
         }
 
         if (hub != null)
         {
-            var result = await HttpClient.GetJsonAsync<GenericGetResult<List<ThreadModel>>>($"api/forum/threads/{hub.Id}");
+            var result = await ForumService.GetThreads(hub.Id);
             if (result.Succeeded)
                 threads = result.Value;
         }
 
         if (threadId > 0)
         {
-            var result = await HttpClient.GetJsonAsync<GenericGetResult<ThreadModel>>($"api/forum/thread/{threadId}");
+            var result = await ForumService.GetThread(threadId);
             if (result.Succeeded)
                 thread = result.Value;
         }
 
         if (thread != null)
         {
-            var result = await HttpClient.GetJsonAsync<GenericGetResult<List<PostModel>>>($"api/forum/posts/{thread.Id}");
+            var result = await ForumService.GetPosts(thread.Id);
             if (result.Succeeded)
                 posts = result.Value;
+        }
+
+        if (hub != null && !threadSearch.IsNullOrWhiteSpace())
+        {
+            searchModel.SearchString = threadSearch;
+            threads = (from t in threads
+                       where t.Name.Contains(threadSearch, StringComparison.OrdinalIgnoreCase)
+                       select t).ToList();
         }
 
         StateHasChanged();
@@ -143,5 +251,55 @@
     public void Dispose()
     {
         NavManager.LocationChanged -= OnLocationChanged;
+    }
+
+    private async Task HandleNewThread()
+    {
+        var authState = await authStateTask;
+        var userId = authState.User.Claims.FirstOrDefault(claim => claim.Type.Equals(ClaimTypes.NameIdentifier)).Value;
+        if (userId.IsNullOrWhiteSpace())
+            return;
+
+        var thread = new ThreadModel()
+        {
+            Name = threadModel.Name,
+            Body = threadModel.Body,
+            HubId = hub.Id,
+            UserId = userId
+        };
+
+        var result = await ForumService.CreateThread(thread);
+        if (!result.Succeeded)
+            return; // Show a toast (yeah I know, it's such a stupid name) about the error
+
+        await JSRuntime.InvokeVoidAsync("helperFunctions.closeModal", "#newThreadModal");
+        StateHasChanged();
+    }
+
+    private void HandleSearch()
+    {
+        Console.WriteLine("test");
+        if (searchModel != null && !searchModel.SearchString.IsNullOrWhiteSpace())
+        {
+            var uri = new Uri(NavManager.Uri);
+            var query = QueryHelpers.ParseQuery(uri.Query)
+                                    .ToDictionary(pair => pair.Key, pair => pair.Value.ToString());
+
+            if (query.ContainsKey("threadSearch"))
+                query["threadSearch"] = searchModel.SearchString;
+            else
+                query.Add("threadSearch", searchModel.SearchString);
+
+            var url = QueryHelpers.AddQueryString(NavManager.BaseUri + "forum", query);
+            NavManager.NavigateTo(url);
+        }
+    }
+
+    private string Replies(int replies)
+    {
+        if (replies == 1)
+            return "1 Reply";
+
+        return $"{replies} Replies";
     }
 }

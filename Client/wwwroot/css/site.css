@@ -325,6 +325,29 @@ app {
             color: #130d34
         }
 
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    width: 100vw;
+    background-color: rgba(0, 0, 0, 0.25);
+    z-index: 10;
+}
+
+.new-thread {
+    background-color: #2ECC40;
+    color: #ffffff;
+    border-radius: 4px;
+    box-shadow: 0 2px 2px rgba(0, 0, 0, 0.25);
+}
+
+    .new-thread:hover {
+        background-color: #29b339;
+        color: #dddddd;
+        text-decoration: none;
+    }
+
 .threads .card {
     color: #000000;
     border-radius: 0;
@@ -338,8 +361,7 @@ app {
     }
 
 .user-link {
-    color: #0d1138;
-    font-weight: 700;
+
 }
 
 .post-options {
@@ -351,6 +373,11 @@ app {
     border-radius: 4px;
     color: #ffffff;
     text-decoration: none;
+}
+
+.scroller {
+    scrollbar-color: #0d1138 #ffffff; /* Firefox */
+    scrollbar-width: thin; /* Firefox */
 }
 
 .fas {

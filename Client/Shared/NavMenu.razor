@@ -1,7 +1,7 @@
 ﻿@using System.Security.Claims
 @implements IDisposable
-@inject HttpClient HttpClient
-@inject IStageChangeAsync StateService
+@inject ForumClientService ForumService
+@inject IStateChangeAsync StateService
 
 <div class="sidebar @NavMenuCssClass">
     <div class="top-row navbar navbar-dark">
@@ -9,7 +9,7 @@
         <button class="navbar-toggler" @onclick="ToggleNavMenu">
             <i class="fas fa-chevron-left fa-lg"></i>
         </button>
-        <AuthorizeView>
+        <AuthorizeView Context="authContext">
             <Authorized>
                 <div class="user-info row no-gutters" style="color: white">
                     @*
@@ -157,7 +157,7 @@
         StateService.OnStateChange += OnAuthStateChanged;
         await OnAuthStateChanged();
 
-        var result = await HttpClient.GetJsonAsync<GenericGetResult<List<HubModel>>>("api/forum/hubs");
+        var result = await ForumService.GetHubs();
         if (result.Succeeded)
             hubs = result.Value;
     }

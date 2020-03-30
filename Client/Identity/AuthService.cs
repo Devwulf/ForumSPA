@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 
 namespace ForumSPA.Client.Identity
 {
-    public class AuthService : IAuthService, IStageChangeAsync
+    public class AuthService : IAuthService, IStateChangeAsync
     {
         public event Func<Task> OnStateChange;
 
@@ -22,9 +22,15 @@ namespace ForumSPA.Client.Identity
         private readonly ILocalStorageService _localStorage;
 
         public AuthService(HttpClient httpClient,
+                           NavigationManager navManager,
                            ApiAuthenticationStateProvider authenticationStateProvider,
                            ILocalStorageService localStorage)
         {
+            /*
+            var baseUri = new Uri(navManager.BaseUri + "api/account/");
+            httpClient.BaseAddress = baseUri;
+            /**/
+
             _httpClient = httpClient;
             _authenticationStateProvider = authenticationStateProvider;
             _localStorage = localStorage;
