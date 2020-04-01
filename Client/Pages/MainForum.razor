@@ -13,11 +13,12 @@
     <div class="col-6 p-5 overflow-scroll h-100 scroller">
         @if (hubId > 0 && hub != null)
         {
-            <div class="row no-gutters mb-3">
-                <h3 class="col-6">@hub.Name</h3>
-                <div class="col-6 d-flex justify-content-end">
-                    <AuthorizeView Context="authContext">
-                        <Authorized>
+            <!-- For now, as long as logged in, can create threads in any hub -->
+            <AuthorizeView Context="authContext">
+                <Authorized>
+                    <div class="row no-gutters mb-3">
+                        <h3 class="col-6">@hub.Name</h3>
+                        <div class="col-6 d-flex justify-content-end">
                             <button class="btn btn-success" type="button" data-toggle="modal" data-target="#newThreadModal">
                                 <i class="fas fa-plus"></i>
                                 New Thread
@@ -34,7 +35,7 @@
                                             </button>
                                         </div>
 
-                                        <EditForm Model="threadModel" OnValidSubmit="HandleNewThread">
+                                        <EditForm Model="threadModel" OnValidSubmit="HandleCreateThread">
                                             <DataAnnotationsValidator />
 
                                             <div class="modal-body">
@@ -58,10 +59,13 @@
                                     </div>
                                 </div>
                             </div>
-                        </Authorized>
-                    </AuthorizeView>
-                </div>
-            </div>
+                        </div>
+                    </div>
+                </Authorized>
+                <NotAuthorized>
+                    <h3>@hub.Name</h3>
+                </NotAuthorized>
+            </AuthorizeView>
 
             <EditForm Model="searchModel" OnValidSubmit="HandleSearch">
                 <DataAnnotationsValidator />
@@ -71,7 +75,7 @@
                     <div class="input-group-append">
                         <button class="btn btn-primary" type="submit">Search</button>
                     </div>
-                    <ValidationMessage For="@(() => searchModel.SearchString)" /> 
+                    <ValidationMessage For="@(() => searchModel.SearchString)" />
                 </div>
             </EditForm>
             <hr />
@@ -110,7 +114,79 @@
     <div class="col-6 p-5 overflow-scroll h-100 scroller">
         @if (threadId > 0 && thread != null)
         {
-            <h3 class="font-weight-bold">@thread.Name</h3>
+            <AuthorizeView Context="threadAuthContext" Policy="IsThreadOwner" Resource="thread">
+                <Authorized>
+                    <div class="mb-3">
+                        @if (isEditingThread)
+                        {
+                            <EditForm Model="editThreadModel" OnValidSubmit="() => HandleSaveEditThread(thread.Id)">
+                                <DataAnnotationsValidator />
+
+                                <div class="mb-3">
+                                    <InputText class="form-control" @bind-Value="editThreadModel.Title" />
+                                    <ValidationMessage For="@(() => editThreadModel.Title)" />
+                                </div>
+
+                                <div class="row no-gutters">
+                                    <button class="btn btn-success col-2 mr-3" type="submit">
+                                        <i class="fas fa-check"></i>
+                                        Save
+                                    </button>
+                                    <button class="btn btn-secondary col-2" type="button" @onclick="HandleCancelEditThread">
+                                        <i class="fas fa-times"></i>
+                                        Cancel
+                                    </button>
+                                </div>
+                            </EditForm>
+                        }
+                        else
+                        {
+                            <h3 class="mb-3">@thread.Name</h3>
+                            <div class="row no-gutters">
+                                <button class="btn btn-primary col-2 mr-3" type="button" @onclick="() => HandleEditThread(thread.Name)">
+                                    <i class="fa fa-edit"></i>
+                                    Edit
+                                </button>
+                                <button class="btn btn-danger col-2" type="button" data-toggle="modal" data-target="#deleteThreadModal">
+                                    <i class="fas fa-times"></i>
+                                    Delete
+                                </button>
+
+                                <!-- Delete Thread modal -->
+                                <div id="deleteThreadModal" class="modal fade" tabindex="-1">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h4 class="modal-title">Delete Thread</h4>
+                                                <button type="button" class="close" data-dismiss="modal">
+                                                    <span>&times;</span>
+                                                </button>
+                                            </div>
+
+                                            <div class="modal-body">
+                                                Are you sure you want to delete '@thread.Name'?
+                                            </div>
+
+                                            <div class="modal-footer">
+                                                <button class="btn btn-secondary" type="button" data-dismiss="modal">Cancel</button>
+                                                <button class="btn btn-danger" type="button" @onclick="() => HandleDeleteThread(thread.Id)">
+                                                    <i class="fas fa-times"></i>
+                                                    Delete
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                    
+
+                </Authorized>
+                <NotAuthorized>
+                    <h3>@thread.Name</h3>
+                </NotAuthorized>
+            </AuthorizeView>
             <hr />
 
             @foreach (var post in posts)
@@ -166,11 +242,15 @@
     public class SearchModel
     {
         [Required]
-        [StringLength(10, MinimumLength = 2)]
         public string SearchString { get; set; }
     }
 
-    private AuthenticationState authContext;
+    public class EditThreadModel
+    {
+        [Required]
+        [StringLength(300, MinimumLength = 6, ErrorMessage = "The {0} must be at least {2} and at most {1} characters long.")]
+        public string Title { get; set; }
+    }
 
     [CascadingParameter]
     private Task<AuthenticationState> authStateTask { get; set; }
@@ -179,6 +259,7 @@
     private int threadId { get; set; }
     private int postId { get; set; }
     private string threadSearch { get; set; }
+    private bool isEditingThread { get; set; }
 
     private async void OnLocationChanged(object sender, LocationChangedEventArgs e) => await RefreshParams();
 
@@ -189,6 +270,7 @@
 
     private SearchModel searchModel = new SearchModel();
     private ThreadModel threadModel = new ThreadModel();
+    private EditThreadModel editThreadModel = new EditThreadModel();
 
     private BrowserDateTime dateTime;
 
@@ -206,6 +288,7 @@
         thread = null;
         threads = new List<ThreadModel>();
         posts = new List<PostModel>();
+        isEditingThread = false;
 
         var uri = new Uri(NavManager.Uri);
         var query = QueryHelpers.ParseQuery(uri.Query);
@@ -259,10 +342,10 @@
         NavManager.LocationChanged -= OnLocationChanged;
     }
 
-    private async Task HandleNewThread()
+    private async Task HandleCreateThread()
     {
         var authState = await authStateTask;
-        var userId = authState.User.Claims.FirstOrDefault(claim => claim.Type.Equals(ClaimTypes.NameIdentifier)).Value;
+        var userId = authState.User.Claims.FirstOrDefault(claim => claim.Type.Equals(ClaimTypes.NameIdentifier))?.Value;
         if (userId.IsNullOrWhiteSpace())
             return;
 
@@ -279,12 +362,48 @@
             return; // Show a toast (yeah I know, it's such a stupid name) about the error
 
         await JSRuntime.InvokeVoidAsync("helperFunctions.closeModal", "#newThreadModal");
-        StateHasChanged();
+        await RefreshParams();
+    }
+
+    private async Task HandleDeleteThread(int threadId)
+    {
+        var result = await ForumService.DeleteThread(threadId);
+        if (!result.Succeeded)
+            return;
+
+        await JSRuntime.InvokeVoidAsync("helperFunctions.closeModal", "#deleteThreadModal");
+        await RefreshParams();
+    }
+
+    private void HandleEditThread(string title)
+    {
+        isEditingThread = true;
+        editThreadModel.Title = title;
+    }
+
+    private async Task HandleSaveEditThread(int threadId)
+    {
+        var threadModel = new ThreadEditModel()
+        {
+            Id = threadId,
+            Name = editThreadModel.Title
+        };
+
+        var result = await ForumService.UpdateThread(threadModel);
+        if (!result.Succeeded)
+            return;
+
+        isEditingThread = false;
+        await RefreshParams();
+    }
+
+    public void HandleCancelEditThread()
+    {
+        isEditingThread = false;
     }
 
     private void HandleSearch()
     {
-        Console.WriteLine("test");
         if (searchModel != null && !searchModel.SearchString.IsNullOrWhiteSpace())
         {
             var uri = new Uri(NavManager.Uri);

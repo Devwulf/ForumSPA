@@ -1,10 +1,11 @@
-﻿using Microsoft.AspNetCore.Authorization.Infrastructure;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization.Infrastructure;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace ForumSPA.Server.Authorization
+namespace ForumSPA.Shared.Authorization
 {
     public static class ForumOperations
     {
@@ -36,6 +37,29 @@ namespace ForumSPA.Server.Authorization
             new OperationAuthorizationRequirement() { Name = ForumConstants.DeletePostOperationName };
     }
 
+    public static class ForumPolicies
+    {
+        public static AuthorizationPolicy IsThreadOwner()
+        {
+            return new AuthorizationPolicyBuilder().RequireAuthenticatedUser()
+                                                   .AddRequirements(
+                                                       ForumOperations.CreateThread, 
+                                                       ForumOperations.UpdateThread, 
+                                                       ForumOperations.DeleteThread)
+                                                   .Build();
+        }
+
+        public static AuthorizationPolicy IsPostOwner()
+        {
+            return new AuthorizationPolicyBuilder().RequireAuthenticatedUser()
+                                                   .AddRequirements(
+                                                       ForumOperations.CreatePost,
+                                                       ForumOperations.UpdatePost,
+                                                       ForumOperations.DeletePost)
+                                                   .Build();
+        }
+    }
+
     public static class ForumConstants
     {
         public const string CreateHubOperationName = "CreateHub";
@@ -57,5 +81,9 @@ namespace ForumSPA.Server.Authorization
         public const string AdministratorRole = "Administrator";
         public const string ModeratorRole = "Moderator";
         public const string UserRole = "User";
+
+        // Policies
+        public const string IsThreadOwner = "IsThreadOwner";
+        public const string IsPostOwner = "IsPostOwner";
     }
 }

@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 
 namespace Blazored.Localisation.Services
 {
+    // TODO: Temporary measure until globalization is implemeted for blazor
     public class BrowserDateTimeProvider
     {
         private readonly IJSRuntime _jsRuntime;

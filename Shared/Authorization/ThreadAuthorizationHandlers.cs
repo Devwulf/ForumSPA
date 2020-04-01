@@ -1,29 +1,23 @@
-﻿using ForumSPA.Server.Data.Models;
-using ForumSPA.Shared.Utils;
+﻿using ForumSPA.Shared.Utils;
+using ForumSPA.Shared.Authorization;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authorization.Infrastructure;
-using Microsoft.AspNetCore.Identity;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Security.Claims;
+using ForumSPA.Shared.Models;
 
-namespace ForumSPA.Server.Authorization
+namespace ForumSPA.Shared.Authorization
 {
     public class ThreadIsOwnerAuthorizationHandler
-        : AuthorizationHandler<OperationAuthorizationRequirement, Thread>
+        : AuthorizationHandler<OperationAuthorizationRequirement, ThreadModel>
     {
-        private readonly UserManager<ApplicationUser> _userManager;
-
-        public ThreadIsOwnerAuthorizationHandler(UserManager<ApplicationUser> userManager)
-        {
-            _userManager = userManager;
-        }
-
         protected override Task HandleRequirementAsync(
             AuthorizationHandlerContext context, 
-            OperationAuthorizationRequirement requirement, 
-            Thread resource)
+            OperationAuthorizationRequirement requirement,
+            ThreadModel resource)
         {
             if (context.User == null || resource == null)
                 return Task.CompletedTask;
@@ -34,10 +28,12 @@ namespace ForumSPA.Server.Authorization
                 requirement.Name != ForumConstants.DeleteThreadOperationName)
                 return Task.CompletedTask;
 
+            var userId = context.User.Claims.FirstOrDefault(claim => claim.Type.Equals(ClaimTypes.NameIdentifier))?.Value;
             // Checking if UserId is null because it is possible to be null
             // from the database
-            if (!resource.UserId.IsNullOrWhiteSpace() &&
-                resource.UserId.Equals(_userManager.GetUserId(context.User)))
+            if (!userId.IsNullOrWhiteSpace() &&
+                !resource.UserId.IsNullOrWhiteSpace() &&
+                resource.UserId.Equals(userId))
                 context.Succeed(requirement);
 
             return Task.CompletedTask;
@@ -45,12 +41,12 @@ namespace ForumSPA.Server.Authorization
     }
 
     public class ThreadAdministratorAuthorizationHandler
-        : AuthorizationHandler<OperationAuthorizationRequirement, Thread>
+        : AuthorizationHandler<OperationAuthorizationRequirement, ThreadModel>
     {
         protected override Task HandleRequirementAsync(
             AuthorizationHandlerContext context, 
-            OperationAuthorizationRequirement requirement, 
-            Thread resource)
+            OperationAuthorizationRequirement requirement,
+            ThreadModel resource)
         {
             if (context.User == null)
                 return Task.CompletedTask;

@@ -86,5 +86,24 @@ namespace ForumSPA.Client.Services
 
             return result;
         }
+
+        public async Task<GenericResult> UpdateThread(ThreadEditModel model)
+        {
+            var threadJson = JsonSerializer.Serialize(model);
+            var response = await _httpClient.PutAsync("api/forum/thread", new StringContent(threadJson, Encoding.UTF8, "application/json"));
+            var responseContent = await response.Content.ReadAsStringAsync();
+            var result = JsonSerializer.Deserialize<GenericResult>(responseContent,
+                                                                   new JsonSerializerOptions() { PropertyNameCaseInsensitive = true });
+            return result;
+        }
+
+        public async Task<GenericResult> DeleteThread(int threadId)
+        {
+            var response = await _httpClient.DeleteAsync($"api/forum/thread/{threadId}");
+            var responseContent = await response.Content.ReadAsStringAsync();
+            var result = JsonSerializer.Deserialize<GenericResult>(responseContent,
+                                                                   new JsonSerializerOptions() { PropertyNameCaseInsensitive = true });
+            return result;
+        }
     }
 }

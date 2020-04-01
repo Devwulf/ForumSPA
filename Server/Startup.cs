@@ -1,4 +1,4 @@
-using ForumSPA.Server.Authorization;
+using ForumSPA.Shared.Authorization;
 using ForumSPA.Server.Data;
 using ForumSPA.Server.Data.Models;
 using ForumSPA.Server.Services;
@@ -89,6 +89,12 @@ namespace ForumSPA.Server
             services.AddTransient<ForumServerService>();
 
             // Authorization Handlers
+            services.AddAuthorization(config =>
+            {
+                config.AddPolicy(ForumConstants.IsThreadOwner, ForumPolicies.IsThreadOwner());
+                config.AddPolicy(ForumConstants.IsPostOwner, ForumPolicies.IsPostOwner());
+            });
+
             services.AddScoped<IAuthorizationHandler, ThreadIsOwnerAuthorizationHandler>();
             services.AddScoped<IAuthorizationHandler, PostIsOwnerAuthorizationHandler>();
 

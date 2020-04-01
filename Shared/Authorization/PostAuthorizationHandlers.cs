@@ -1,29 +1,21 @@
-﻿using ForumSPA.Server.Data.Models;
-using ForumSPA.Shared.Utils;
+﻿using ForumSPA.Shared.Utils;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Authorization.Infrastructure;
-using Microsoft.AspNetCore.Identity;
-using System;
+using Microsoft.AspNetCore.Authorization.Infrastructure;using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Security.Claims;
+using ForumSPA.Shared.Models;
 
-namespace ForumSPA.Server.Authorization
+namespace ForumSPA.Shared.Authorization
 {
     public class PostIsOwnerAuthorizationHandler
-        : AuthorizationHandler<OperationAuthorizationRequirement, Post>
+        : AuthorizationHandler<OperationAuthorizationRequirement, PostModel>
     {
-        private readonly UserManager<ApplicationUser> _userManager;
-
-        public PostIsOwnerAuthorizationHandler(UserManager<ApplicationUser> userManager)
-        {
-            _userManager = userManager;
-        }
-
         protected override Task HandleRequirementAsync(
             AuthorizationHandlerContext context, 
             OperationAuthorizationRequirement requirement, 
-            Post resource)
+            PostModel resource)
         {
             if (context.User == null || resource == null)
                 return Task.CompletedTask;
@@ -34,8 +26,10 @@ namespace ForumSPA.Server.Authorization
                 requirement.Name != ForumConstants.DeletePostOperationName)
                 return Task.CompletedTask;
 
-            if (!resource.UserId.IsNullOrWhiteSpace() &&
-                resource.UserId.Equals(_userManager.GetUserId(context.User)))
+            var userId = context.User.Claims.FirstOrDefault(claim => claim.Type.Equals(ClaimTypes.NameIdentifier))?.Value;
+            if (!userId.IsNullOrWhiteSpace() &&
+                !resource.UserId.IsNullOrWhiteSpace() &&
+                resource.UserId.Equals(userId))
                 context.Succeed(requirement);
 
             return Task.CompletedTask;
@@ -43,12 +37,12 @@ namespace ForumSPA.Server.Authorization
     }
 
     public class PostAdministratorAuthorizationHandler
-        : AuthorizationHandler<OperationAuthorizationRequirement, Post>
+        : AuthorizationHandler<OperationAuthorizationRequirement, PostModel>
     {
         protected override Task HandleRequirementAsync(
             AuthorizationHandlerContext context, 
-            OperationAuthorizationRequirement requirement, 
-            Post resource)
+            OperationAuthorizationRequirement requirement,
+            PostModel resource)
         {
             if (context.User == null)
                 return Task.CompletedTask;

@@ -3,6 +3,8 @@ using Blazored.LocalStorage;
 using ForumSPA.Client.Identity;
 using ForumSPA.Client.Services;
 using ForumSPA.Client.Utils;
+using ForumSPA.Shared.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Blazor.Http;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Builder;
@@ -38,6 +40,19 @@ namespace ForumSPA.Client
             services.AddScoped<ForumClientService>();
 
             services.AddScoped<BrowserDateTimeProvider>();
+
+            services.AddAuthorizationCore(config =>
+            {
+                config.AddPolicy(ForumConstants.IsThreadOwner, ForumPolicies.IsThreadOwner());
+                config.AddPolicy(ForumConstants.IsPostOwner, ForumPolicies.IsPostOwner());
+            });
+
+            services.AddScoped<IAuthorizationHandler, ThreadIsOwnerAuthorizationHandler>();
+            services.AddScoped<IAuthorizationHandler, PostIsOwnerAuthorizationHandler>();
+
+            services.AddSingleton<IAuthorizationHandler, HubAdministratorAuthorizationHandler>();
+            services.AddSingleton<IAuthorizationHandler, ThreadAdministratorAuthorizationHandler>();
+            services.AddSingleton<IAuthorizationHandler, PostAdministratorAuthorizationHandler>();
         }
 
         public void Configure(IComponentsApplicationBuilder app)

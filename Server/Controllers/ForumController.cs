@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
-using ForumSPA.Server.Authorization;
+using ForumSPA.Shared.Authorization;
 using ForumSPA.Server.Data;
 using ForumSPA.Server.Data.Models;
 using ForumSPA.Server.Services;
@@ -13,6 +13,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+using ForumSPA.Server.Utils;
 
 namespace ForumSPA.Server.Controllers
 {
@@ -24,15 +26,18 @@ namespace ForumSPA.Server.Controllers
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IAuthorizationService _authService;
         private readonly ForumServerService _forumService;
+        private readonly ILogger<ForumController> _logger;
 
         public ForumController(
             UserManager<ApplicationUser> userManager,
             IAuthorizationService authService,
-            ForumServerService forumService)
+            ForumServerService forumService,
+            ILogger<ForumController> logger)
         {
             _userManager = userManager;
             _authService = authService;
             _forumService = forumService;
+            _logger = logger;
         }
 
         /// <summary>
@@ -234,7 +239,9 @@ namespace ForumSPA.Server.Controllers
                     Error = "The created hub has an empty/whitespace title."
                 });
 
-            var authResult = await _authService.AuthorizeAsync(User, newHub, ForumOperations.CreateHub);
+            var newHubModel = await ConvertHubToHubModel(newHub);
+
+            var authResult = await _authService.AuthorizeAsync(User, newHubModel, ForumOperations.CreateHub);
             if (!authResult.Succeeded)
                 return Unauthorized(new GenericResult()
                 {
@@ -264,9 +271,11 @@ namespace ForumSPA.Server.Controllers
                 {
                     Succeeded = false,
                     Error = $"Hub of id '{model.Id}' was not found and not updated."
-                }); 
-            
-            var authResult = await _authService.AuthorizeAsync(User, hub, ForumOperations.UpdateHub);
+                });
+
+            var hubModel = await ConvertHubToHubModel(hub);
+
+            var authResult = await _authService.AuthorizeAsync(User, hubModel, ForumOperations.UpdateHub);
             if (!authResult.Succeeded)
                 return Unauthorized(new GenericResult()
                 {
@@ -308,7 +317,9 @@ namespace ForumSPA.Server.Controllers
                     Error = $"Hub of id '{hubId}' was not found and not deleted."
                 });
 
-            var authResult = await _authService.AuthorizeAsync(User, hub, ForumOperations.DeleteHub);
+            var hubModel = await ConvertHubToHubModel(hub);
+
+            var authResult = await _authService.AuthorizeAsync(User, hubModel, ForumOperations.DeleteHub);
             if (!authResult.Succeeded)
                 return Unauthorized(new GenericResult()
                 {
@@ -360,8 +371,11 @@ namespace ForumSPA.Server.Controllers
                     Succeeded = false,
                     Error = "The created thread has an empty/whitespace title."
                 });
-            
-            var authResult = await _authService.AuthorizeAsync(User, newThread, ForumOperations.CreateThread);
+
+            var newThreadModel = await ConvertThreadToThreadModel(newThread);
+            var userId = User.Claims.FirstOrDefault(claim => claim.Type.Equals(ClaimTypes.NameIdentifier))?.Value;
+            Console.WriteLine(userId + " " + newThreadModel.UserId);
+            var authResult = await _authService.AuthorizeAsync(User, newThreadModel, ForumOperations.CreateThread);
             if (!authResult.Succeeded)
                 return Unauthorized(new GenericResult()
                 {
@@ -397,7 +411,7 @@ namespace ForumSPA.Server.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        public async Task<IActionResult> UpdateThread([FromBody] ThreadModel model)
+        public async Task<IActionResult> UpdateThread([FromBody] ThreadEditModel model)
         {
             var thread = await _forumService.GetThread(model.Id);
             if (thread == null)
@@ -407,7 +421,9 @@ namespace ForumSPA.Server.Controllers
                     Error = $"Thread of id '{model.Id}' was not found and not updated."
                 });
 
-            var authResult = await _authService.AuthorizeAsync(User, thread, ForumOperations.UpdateThread);
+            var threadModel = await ConvertThreadToThreadModel(thread);
+
+            var authResult = await _authService.AuthorizeAsync(User, threadModel, ForumOperations.UpdateThread);
             if (!authResult.Succeeded)
                 return Unauthorized(new GenericResult()
                 {
@@ -427,6 +443,7 @@ namespace ForumSPA.Server.Controllers
                     Error = "The edited thread has an empty/whitespace title."
                 });
 
+            _logger.LogInformation("5");
             await _forumService.UpdateThread(thread);
 
             return Ok(new GenericResult() { Succeeded = true });
@@ -446,7 +463,9 @@ namespace ForumSPA.Server.Controllers
                     Error = $"Thread of id '{threadId}' was not found and not deleted." 
                 });
 
-            var authResult = await _authService.AuthorizeAsync(User, thread, ForumOperations.DeleteThread);
+            var threadModel = await ConvertThreadToThreadModel(thread);
+
+            var authResult = await _authService.AuthorizeAsync(User, threadModel, ForumOperations.DeleteThread);
             if (!authResult.Succeeded)
                 return Unauthorized(new GenericResult()
                 {
@@ -500,7 +519,9 @@ namespace ForumSPA.Server.Controllers
                     Error = "The created post has an empty/whitespace body."
                 });
 
-            var authResult = await _authService.AuthorizeAsync(User, newPost, ForumOperations.CreatePost);
+            var newPostModel = await ConvertPostToPostModel(newPost);
+
+            var authResult = await _authService.AuthorizeAsync(User, newPostModel, ForumOperations.CreatePost);
             if (!authResult.Succeeded)
                 return Unauthorized(new GenericResult()
                 {
@@ -531,7 +552,9 @@ namespace ForumSPA.Server.Controllers
                     Error = $"Post of id '{model.Id}' was not found and not updated."
                 });
 
-            var authResult = await _authService.AuthorizeAsync(User, post, ForumOperations.UpdatePost);
+            var postModel = await ConvertPostToPostModel(post);
+
+            var authResult = await _authService.AuthorizeAsync(User, postModel, ForumOperations.UpdatePost);
             if (!authResult.Succeeded)
                 return Unauthorized(new GenericResult()
                 {
@@ -569,7 +592,9 @@ namespace ForumSPA.Server.Controllers
                     Error = $"Post of id '{postId}' was not found and not deleted."
                 });
 
-            var authResult = await _authService.AuthorizeAsync(User, post, ForumOperations.DeletePost);
+            var postModel = await ConvertPostToPostModel(post);
+
+            var authResult = await _authService.AuthorizeAsync(User, postModel, ForumOperations.DeletePost);
             if (!authResult.Succeeded)
                 return Unauthorized(new GenericResult()
                 {
