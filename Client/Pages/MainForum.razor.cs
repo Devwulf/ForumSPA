@@ -111,6 +111,9 @@ namespace ForumSPA.Client.Pages
                 var result = await ForumService.GetPosts(thread.Id);
                 if (result.Succeeded)
                     posts = result.Value;
+
+                StateHasChanged(); // Wait for all html to load first
+                await JSRuntime.InvokeVoidAsync("helperFunctions.IFramelyLoad");
             }
 
             if (hub != null && !threadSearch.IsNullOrWhiteSpace())
