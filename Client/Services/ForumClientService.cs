@@ -105,5 +105,35 @@ namespace ForumSPA.Client.Services
                                                                    new JsonSerializerOptions() { PropertyNameCaseInsensitive = true });
             return result;
         }
+
+        public async Task<GenericResult> CreatePost(PostModel model)
+        {
+            var postJson = JsonSerializer.Serialize(model);
+            var response = await _httpClient.PostAsync("api/forum/post", new StringContent(postJson, Encoding.UTF8, "application/json"));
+            var responseContent = await response.Content.ReadAsStringAsync();
+            var result = JsonSerializer.Deserialize<GenericResult>(responseContent, new JsonSerializerOptions() { PropertyNameCaseInsensitive = true });
+            
+            if (response.IsSuccessStatusCode)
+                return new GenericResult() { Succeeded = true };
+
+            return result;
+        }
+
+        public async Task<GenericResult> UpdatePost(PostModel model)
+        {
+            var postJson = JsonSerializer.Serialize(model);
+            var response = await _httpClient.PutAsync("api/forum/post", new StringContent(postJson, Encoding.UTF8, "application/json"));
+            var responseContent = await response.Content.ReadAsStringAsync();
+            var result = JsonSerializer.Deserialize<GenericResult>(responseContent, new JsonSerializerOptions() { PropertyNameCaseInsensitive = true });
+            return result;
+        }
+
+        public async Task<GenericResult> DeletePost(int postId)
+        {
+            var response = await _httpClient.DeleteAsync($"api/forum/post/{postId}");
+            var responseContent = await response.Content.ReadAsStringAsync();
+            var result = JsonSerializer.Deserialize<GenericResult>(responseContent, new JsonSerializerOptions() { PropertyNameCaseInsensitive = true });
+            return result;
+        }
     }
 }

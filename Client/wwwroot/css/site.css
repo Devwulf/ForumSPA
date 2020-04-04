@@ -371,6 +371,7 @@ app {
 .post-options:hover {
     background-color: #0d1138;
     border-radius: 4px;
+    border-width: 0;
     color: #ffffff;
     text-decoration: none;
 }
@@ -534,6 +535,7 @@ app {
 
 .overflow-scroll {
     overflow-y: scroll;
+    overflow-x: hidden;
 }
 
 .profile-pic {
@@ -543,4 +545,24 @@ app {
     padding: 0;
     display: unset !important;
     text-align: center;
+}
+
+/* New CSS */
+:root {
+    --c-blue-navy: #0d1138;
+}
+
+button.this-btn {
+    border-width: 0;
+    border-radius: 4px;
+}
+
+button.this-btn-navyblue {
+    background-color: white;
+    color: var(--c-blue-navy);
+}
+
+button.this-btn-navyblue:hover {
+    background-color: var(--c-blue-navy);
+    color: white;
 }

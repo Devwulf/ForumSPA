@@ -3,11 +3,6 @@
 @using System.Security.Claims 
 @using System.ComponentModel.DataAnnotations
 @using Blazored.Localisation.Services 
-@implements IDisposable
-@inject NavigationManager NavManager
-@inject ForumClientService ForumService
-@inject IJSRuntime JSRuntime 
-@inject BrowserDateTimeProvider DateTimeProvider
 
 <div class="row no-gutters h-100">
     <div class="col-6 p-5 overflow-scroll h-100 scroller">
@@ -119,12 +114,12 @@
                     <div class="mb-3">
                         @if (isEditingThread)
                         {
-                            <EditForm Model="editThreadModel" OnValidSubmit="() => HandleSaveEditThread(thread.Id)">
+                            <EditForm Model="threadEditModel" OnValidSubmit="HandleSaveEditThread">
                                 <DataAnnotationsValidator />
 
                                 <div class="mb-3">
-                                    <InputText class="form-control" @bind-Value="editThreadModel.Title" />
-                                    <ValidationMessage For="@(() => editThreadModel.Title)" />
+                                    <InputText class="form-control" @bind-Value="threadEditModel.Name" />
+                                    <ValidationMessage For="@(() => threadEditModel.Name)" />
                                 </div>
 
                                 <div class="row no-gutters">
@@ -143,7 +138,7 @@
                         {
                             <h3 class="mb-3">@thread.Name</h3>
                             <div class="row no-gutters">
-                                <button class="btn btn-primary col-2 mr-3" type="button" @onclick="() => HandleEditThread(thread.Name)">
+                                <button class="btn btn-primary col-2 mr-3" type="button" @onclick="() => HandleEditThread(thread.Id, thread.Name)">
                                     <i class="fa fa-edit"></i>
                                     Edit
                                 </button>
@@ -191,10 +186,10 @@
 
             @foreach (var post in posts)
             {
-                <div class="post py-4">
+                <div class="post pt-4">
                     <div class="row no-gutters mb-4" style="color: #0d1138;">
                         <img class="mr-3" src="http://getdrawings.com/free-icon/icon-50x50-55.png" height="50" width="50" />
-                        <div class="col-6">
+                        <div>
                             @if (post.IsMainPost)
                             {
                                 <div>Started by <a class="user-link font-weight-bold" href="/">@post.UserName</a></div>
@@ -203,7 +198,7 @@
                             {
                                 <a class="user-link font-weight-bold" href="/">@post.UserName</a>
                             }
-                            <div>on <strong>@DateHelper.ToTimeSpan(post.DateCreated, dateTime.Now)</strong></div>
+                            <div>on <strong>@dateTime.ConvertToBrowserTime(post.DateCreated, "f")</strong></div>
                         </div>
                     </div>
 
@@ -212,22 +207,65 @@
                     </div>
 
                     <div class="row no-gutters mb-4 text-center">
-                        <a class="post-options py-2 col-2" href="/">
+                        <button class="this-btn this-btn-navyblue py-2 col-2" type="button" @onclick="() => HandleReplyPost(post.Id)">
                             <i class="fas fa-reply"></i>
                             Reply
-                        </a>
-                        <a class="post-options py-2 col-2" href="/">
+                        </button>
+                        <button class="this-btn this-btn-navyblue py-2 col-2" type="button" @onclick="() => HandleQuotePost(post.Id)">
                             <i class="fas fa-quote-right"></i>
                             Quote
-                        </a>
-                        <a class="post-options py-2 col-2" href="/">
-                            <i class="fas fa-exclamation-circle"></i>
-                            Report
-                        </a>
+                        </button>
+
+                        <AuthorizeView Policy="IsPostOwner" Resource="post">
+                            <Authorized>
+                                <button class="this-btn this-btn-navyblue py-2 col-2" type="button" @onclick="() => HandleEditPost(post.Id, post.Body)">
+                                    <i class="fas fa-edit"></i>
+                                    Edit
+                                </button>
+                                @if (!post.IsMainPost)
+                                {
+                                    <button class="this-btn this-btn-navyblue py-2 col-2" type="button" @onclick="() => HandleDeletePost(post.Id)">
+                                        <i class="fas fa-times"></i>
+                                        Delete
+                                    </button>
+                                }
+                            </Authorized>
+                            <NotAuthorized>
+                                <button class="this-btn this-btn-navyblue py-2 col-2" type="button" @onclick="() => HandleReportPost(post.Id)">
+                                    <i class="fas fa-exclamation-circle"></i>
+                                    Report
+                                </button>
+                            </NotAuthorized>
+                        </AuthorizeView>
                     </div>
                     <hr />
                 </div>
             }
+
+            <AuthorizeView Context="replyAuthContext">
+                <Authorized>
+                    <EditForm Model="postModel" OnValidSubmit="HandleSaveReplyPost" class="pt-4">
+                        <DataAnnotationsValidator />
+
+                        <h4 class="mb-3">Reply</h4>
+                        <InputRichText Id="postInput" @bind-Value="postModel.Body" @ref="postInputRef" />
+                        <ValidationMessage For="@(() => postModel.Body)" />
+
+                        @if (isEditingPost)
+                        {
+                            <button class="btn btn-success my-3" type="submit">Save</button>
+                            <button class="btn btn-secondary my-3" type="button" @onclick="HandleCancelReplyPost">Cancel</button>
+                        }
+                        else
+                        {
+                            <button class="btn btn-success my-3" type="submit">Reply</button>
+                        }
+                    </EditForm>
+                </Authorized>
+                <NotAuthorized>
+                    <h4>Please <a href='@string.Format("/login?redir={0}", EncodeUri($"/forum?hubId={thread.HubId}&threadId={thread.Id}"))'>login</a> to reply to this thread.</h4>
+                </NotAuthorized>
+            </AuthorizeView>
         }
         else
         {
@@ -237,194 +275,3 @@
         }
     </div>
 </div>
-
-@code {
-    public class SearchModel
-    {
-        [Required]
-        public string SearchString { get; set; }
-    }
-
-    public class EditThreadModel
-    {
-        [Required]
-        [StringLength(300, MinimumLength = 6, ErrorMessage = "The {0} must be at least {2} and at most {1} characters long.")]
-        public string Title { get; set; }
-    }
-
-    [CascadingParameter]
-    private Task<AuthenticationState> authStateTask { get; set; }
-
-    private int hubId { get; set; }
-    private int threadId { get; set; }
-    private int postId { get; set; }
-    private string threadSearch { get; set; }
-    private bool isEditingThread { get; set; }
-
-    private async void OnLocationChanged(object sender, LocationChangedEventArgs e) => await RefreshParams();
-
-    private HubModel hub;
-    private List<ThreadModel> threads;
-    private ThreadModel thread;
-    private List<PostModel> posts;
-
-    private SearchModel searchModel = new SearchModel();
-    private ThreadModel threadModel = new ThreadModel();
-    private EditThreadModel editThreadModel = new EditThreadModel();
-
-    private BrowserDateTime dateTime;
-
-    protected override async Task OnInitializedAsync()
-    {
-        dateTime = await DateTimeProvider.GetInstance();
-
-        NavManager.LocationChanged += OnLocationChanged;
-        await RefreshParams();
-    }
-
-    private async Task RefreshParams()
-    {
-        hub = null;
-        thread = null;
-        threads = new List<ThreadModel>();
-        posts = new List<PostModel>();
-        isEditingThread = false;
-
-        var uri = new Uri(NavManager.Uri);
-        var query = QueryHelpers.ParseQuery(uri.Query);
-
-        hubId = query.TryGetValue("hubId", out var hubStr) ? (int.TryParse(hubStr.First(), out int hubInt) ? hubInt : -1) : -1;
-        threadId = query.TryGetValue("threadId", out var threadStr) ? (int.TryParse(threadStr.First(), out int threadInt) ? threadInt : -1) : -1;
-        postId = query.TryGetValue("postId", out var postStr) ? (int.TryParse(postStr.First(), out int postInt) ? postInt : -1) : -1;
-        threadSearch = query.TryGetValue("threadSearch", out var searchStr) ? searchStr.ToString() : null;
-
-        if (hubId > 0)
-        {
-            var result = await ForumService.GetHub(hubId);
-            if (result.Succeeded)
-                hub = result.Value;
-        }
-
-        if (hub != null)
-        {
-            var result = await ForumService.GetThreads(hub.Id);
-            if (result.Succeeded)
-                threads = result.Value;
-        }
-
-        if (threadId > 0)
-        {
-            var result = await ForumService.GetThread(threadId);
-            if (result.Succeeded)
-                thread = result.Value;
-        }
-
-        if (thread != null)
-        {
-            var result = await ForumService.GetPosts(thread.Id);
-            if (result.Succeeded)
-                posts = result.Value;
-        }
-
-        if (hub != null && !threadSearch.IsNullOrWhiteSpace())
-        {
-            searchModel.SearchString = threadSearch;
-            threads = (from t in threads
-                       where t.Name.Contains(threadSearch, StringComparison.OrdinalIgnoreCase)
-                       select t).ToList();
-        }
-
-        StateHasChanged();
-    }
-
-    public void Dispose()
-    {
-        NavManager.LocationChanged -= OnLocationChanged;
-    }
-
-    private async Task HandleCreateThread()
-    {
-        var authState = await authStateTask;
-        var userId = authState.User.Claims.FirstOrDefault(claim => claim.Type.Equals(ClaimTypes.NameIdentifier))?.Value;
-        if (userId.IsNullOrWhiteSpace())
-            return;
-
-        var thread = new ThreadModel()
-        {
-            Name = threadModel.Name,
-            Body = threadModel.Body,
-            HubId = hub.Id,
-            UserId = userId
-        };
-
-        var result = await ForumService.CreateThread(thread);
-        if (!result.Succeeded)
-            return; // Show a toast (yeah I know, it's such a stupid name) about the error
-
-        await JSRuntime.InvokeVoidAsync("helperFunctions.closeModal", "#newThreadModal");
-        await RefreshParams();
-    }
-
-    private async Task HandleDeleteThread(int threadId)
-    {
-        var result = await ForumService.DeleteThread(threadId);
-        if (!result.Succeeded)
-            return;
-
-        await JSRuntime.InvokeVoidAsync("helperFunctions.closeModal", "#deleteThreadModal");
-        await RefreshParams();
-    }
-
-    private void HandleEditThread(string title)
-    {
-        isEditingThread = true;
-        editThreadModel.Title = title;
-    }
-
-    private async Task HandleSaveEditThread(int threadId)
-    {
-        var threadModel = new ThreadEditModel()
-        {
-            Id = threadId,
-            Name = editThreadModel.Title
-        };
-
-        var result = await ForumService.UpdateThread(threadModel);
-        if (!result.Succeeded)
-            return;
-
-        isEditingThread = false;
-        await RefreshParams();
-    }
-
-    public void HandleCancelEditThread()
-    {
-        isEditingThread = false;
-    }
-
-    private void HandleSearch()
-    {
-        if (searchModel != null && !searchModel.SearchString.IsNullOrWhiteSpace())
-        {
-            var uri = new Uri(NavManager.Uri);
-            var query = QueryHelpers.ParseQuery(uri.Query)
-                                    .ToDictionary(pair => pair.Key, pair => pair.Value.ToString());
-
-            if (query.ContainsKey("threadSearch"))
-                query["threadSearch"] = searchModel.SearchString;
-            else
-                query.Add("threadSearch", searchModel.SearchString);
-
-            var url = QueryHelpers.AddQueryString(NavManager.BaseUri + "forum", query);
-            NavManager.NavigateTo(url);
-        }
-    }
-
-    private string Replies(int replies)
-    {
-        if (replies == 1)
-            return "1 Reply";
-
-        return $"{replies} Replies";
-    }
-}

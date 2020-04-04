@@ -602,6 +602,13 @@ namespace ForumSPA.Server.Controllers
                     Error = "Not authorized"
                 });
 
+            if (post.IsMainPost)
+                return BadRequest(new GenericResult()
+                {
+                    Succeeded = false,
+                    Error = "Cannot delete a main post of a thread. Delete the thread instead."
+                });
+
             await _forumService.DeletePost(postId);
 
             return Ok(new GenericResult() { Succeeded = true });

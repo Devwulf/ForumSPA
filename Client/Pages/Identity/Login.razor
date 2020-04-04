@@ -1,4 +1,5 @@
 ﻿@page "/login"
+@using Microsoft.AspNetCore.WebUtilities
 @inject IAuthService AuthService
 @inject NavigationManager NavManager
 
@@ -49,9 +50,14 @@
 
         if (result.Succeeded)
         {
-            // No need to forceLoad, just add listener to NotifyStateChange event 
-            // in AuthService for components that needed to be updated after login
-            NavManager.NavigateTo("/");
+            var uri = new Uri(NavManager.Uri);
+            var query = QueryHelpers.ParseQuery(uri.Query);
+            var redir = query.TryGetValue("redir", out var redirStr) ? redirStr.ToString() : null;
+
+            if (!redir.IsNullOrWhiteSpace())
+                NavManager.NavigateTo(redir);
+            else
+                NavManager.NavigateTo("/");
         }
         else
         {
