@@ -3,6 +3,7 @@ using ForumSPA.Client.Components;
 using ForumSPA.Client.Services;
 using ForumSPA.Shared.Models;
 using ForumSPA.Shared.Utils;
+using HtmlAgilityPack;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Routing;
@@ -183,11 +184,11 @@ namespace ForumSPA.Client.Pages
             await RefreshParams();
         }
 
-        private void HandleEditThread(int threadId, string title)
+        private void HandleEditThread(ThreadModel model)
         {
             isEditingThread = true;
-            threadEditModel.Id = threadId;
-            threadEditModel.Name = title;
+            threadEditModel.Id = model.Id;
+            threadEditModel.Name = model.Name;
         }
 
         private async Task HandleSaveEditThread()
@@ -253,14 +254,32 @@ namespace ForumSPA.Client.Pages
             isEditingPost = false;
         }
 
-        private async Task HandleReplyPost(int postId)
+        private async Task HandleQuotePost(PostModel model)
         {
-            
+            var quote = $"<blockquote>" +
+                            $"<div class=\"d-flex justify-content-end small c-gray-light\">" +
+                                $"quoting&nbsp;<a href=\"/\">{model.UserName}</a>&nbsp;(post&nbsp;<a href=\"/\">#{model.Id}</a>)" +
+                            $"</div>" +
+                            $"{ClearBlockQuotes(model.Body)}" +
+                        $"</blockquote>" +
+                        $"<p></p>";
+            await postInputRef.EditorAddValue(quote);
         }
 
-        private async Task HandleQuotePost(int postId)
+        private string ClearBlockQuotes(string body)
         {
+            var html = new HtmlDocument();
+            html.LoadHtml(body);
 
+            var quotes = html.DocumentNode.SelectNodes("blockquote");
+            if (quotes != null)
+            {
+                var quotesList = quotes.ToList();
+                foreach (var quote in quotesList)
+                    quote.Remove();
+            }
+
+            return html.DocumentNode.OuterHtml;
         }
 
         private async Task HandleReportPost(int postId)
@@ -268,12 +287,12 @@ namespace ForumSPA.Client.Pages
 
         }
 
-        private async Task HandleEditPost(int postId, string body)
+        private async Task HandleEditPost(PostModel model)
         {
             isEditingPost = true;
-            postModel.Id = postId;
-            postModel.Body = body;
-            await postInputRef.EditorSetValue(body);
+            postModel.Id = model.Id;
+            postModel.Body = model.Body;
+            await postInputRef.EditorSetValue(postModel.Body);
         }
 
         private async Task HandleDeletePost(int postId)

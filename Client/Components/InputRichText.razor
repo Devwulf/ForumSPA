@@ -50,6 +50,11 @@
         return Task.CompletedTask;
     }
 
+    public async Task EditorAddValue(string data)
+    {
+        await JSRuntime.InvokeVoidAsync("CKEditorInterop.addValue", Id, data);
+    }
+
     public async Task EditorSetValue(string data)
     {
         await JSRuntime.InvokeVoidAsync("CKEditorInterop.setValue", Id, data);

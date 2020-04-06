@@ -7,7 +7,8 @@
     },
     IFramelyLoad: function () {
         document.querySelectorAll('oembed[url]').forEach(element => {
-            iframely.load(element, element.attributes.url.value);
+            if (!element.hasChildNodes()) // so it doesn't load another one when one exists
+                iframely.load(element, element.attributes.url.value);
         });
     }
 };

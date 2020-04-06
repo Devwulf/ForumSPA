@@ -566,3 +566,7 @@ button.this-btn-navyblue:hover {
     background-color: var(--c-blue-navy);
     color: white;
 }
+
+.c-gray-light {
+    color: #888;
+}

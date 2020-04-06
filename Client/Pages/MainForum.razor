@@ -138,7 +138,7 @@
                         {
                             <h3 class="mb-3">@thread.Name</h3>
                             <div class="row no-gutters">
-                                <button class="btn btn-primary col-2 mr-3" type="button" @onclick="() => HandleEditThread(thread.Id, thread.Name)">
+                                <button class="btn btn-primary col-2 mr-3" type="button" @onclick="() => HandleEditThread(thread)">
                                     <i class="fa fa-edit"></i>
                                     Edit
                                 </button>
@@ -206,38 +206,38 @@
                         @((MarkupString)post.Body)
                     </div>
 
-                    <div class="row no-gutters mb-4 text-center">
-                        <button class="this-btn this-btn-navyblue py-2 col-2" type="button" @onclick="() => HandleReplyPost(post.Id)">
-                            <i class="fas fa-reply"></i>
-                            Reply
-                        </button>
-                        <button class="this-btn this-btn-navyblue py-2 col-2" type="button" @onclick="() => HandleQuotePost(post.Id)">
-                            <i class="fas fa-quote-right"></i>
-                            Quote
-                        </button>
+                    <AuthorizeView Context="one">
+                        <Authorized>
+                            <div class="row no-gutters mb-4 text-center">
+                                <button class="this-btn this-btn-navyblue py-2 col-2" type="button" @onclick="() => HandleQuotePost(post)">
+                                    <i class="fas fa-quote-right"></i>
+                                    Quote
+                                </button>
 
-                        <AuthorizeView Policy="IsPostOwner" Resource="post">
-                            <Authorized>
-                                <button class="this-btn this-btn-navyblue py-2 col-2" type="button" @onclick="() => HandleEditPost(post.Id, post.Body)">
-                                    <i class="fas fa-edit"></i>
-                                    Edit
-                                </button>
-                                @if (!post.IsMainPost)
-                                {
-                                    <button class="this-btn this-btn-navyblue py-2 col-2" type="button" @onclick="() => HandleDeletePost(post.Id)">
-                                        <i class="fas fa-times"></i>
-                                        Delete
-                                    </button>
-                                }
-                            </Authorized>
-                            <NotAuthorized>
-                                <button class="this-btn this-btn-navyblue py-2 col-2" type="button" @onclick="() => HandleReportPost(post.Id)">
-                                    <i class="fas fa-exclamation-circle"></i>
-                                    Report
-                                </button>
-                            </NotAuthorized>
-                        </AuthorizeView>
-                    </div>
+                                <AuthorizeView Policy="IsPostOwner" Resource="post">
+                                    <Authorized>
+                                        <button class="this-btn this-btn-navyblue py-2 col-2" type="button" @onclick="() => HandleEditPost(post)">
+                                            <i class="fas fa-edit"></i>
+                                            Edit
+                                        </button>
+                                        @if (!post.IsMainPost)
+                                        {
+                                            <button class="this-btn this-btn-navyblue py-2 col-2" type="button" @onclick="() => HandleDeletePost(post.Id)">
+                                                <i class="fas fa-times"></i>
+                                                Delete
+                                            </button>
+                                        }
+                                    </Authorized>
+                                    <NotAuthorized>
+                                        <button class="this-btn this-btn-navyblue py-2 col-2" type="button" @onclick="() => HandleReportPost(post.Id)">
+                                            <i class="fas fa-exclamation-circle"></i>
+                                            Report
+                                        </button>
+                                    </NotAuthorized>
+                                </AuthorizeView>
+                            </div>
+                        </Authorized>
+                    </AuthorizeView>
                     <hr />
                 </div>
             }
@@ -259,6 +259,7 @@
                         else
                         {
                             <button class="btn btn-success my-3" type="submit">Reply</button>
+                            <button class="btn btn-secondary my-3" type="button" @onclick="HandleCancelReplyPost">Clear</button>
                         }
                     </EditForm>
                 </Authorized>
