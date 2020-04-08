@@ -107,7 +107,7 @@
         }
     </div>
     <div class="col-6 p-5 overflow-scroll h-100 scroller">
-        @if (threadId > 0 && thread != null)
+        @if (hubId > 0 && hub != null && threadId > 0 && thread != null)
         {
             <AuthorizeView Context="threadAuthContext" Policy="IsThreadOwner" Resource="thread">
                 <Authorized>
@@ -186,7 +186,7 @@
 
             @foreach (var post in posts)
             {
-                <div class="post pt-4">
+                <div id="@post.Id" class="post pt-4">
                     <div class="row no-gutters mb-4" style="color: #0d1138;">
                         <img class="mr-3" src="http://getdrawings.com/free-icon/icon-50x50-55.png" height="50" width="50" />
                         <div>
@@ -242,6 +242,11 @@
                 </div>
             }
 
+            @for(int i = 1; i <= PageCount(); i++)
+            {
+                <a class="btn @ActivePageButton(i)" href='@string.Format("/forum?hubId={0}&threadId={1}&page={2}", hub.Id, thread.Id, i)'>@i</a>
+            }
+
             <AuthorizeView Context="replyAuthContext">
                 <Authorized>
                     <EditForm Model="postModel" OnValidSubmit="HandleSaveReplyPost" class="pt-4">
@@ -264,7 +269,7 @@
                     </EditForm>
                 </Authorized>
                 <NotAuthorized>
-                    <h4>Please <a href='@string.Format("/login?redir={0}", EncodeUri($"/forum?hubId={thread.HubId}&threadId={thread.Id}"))'>login</a> to reply to this thread.</h4>
+                    <h4 class="mt-4">Please <a href='@string.Format("/login?redir={0}", EncodeUri($"/forum?hubId={thread.HubId}&threadId={thread.Id}"))'>login</a> to reply to this thread.</h4>
                 </NotAuthorized>
             </AuthorizeView>
         }

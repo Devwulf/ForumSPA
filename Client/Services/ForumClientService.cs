@@ -56,21 +56,29 @@ namespace ForumSPA.Client.Services
             return result;
         }
 
-        public async Task<GenericGetResult<ThreadModel>> GetThread(int threadId)
-        {
-            var response = await _httpClient.GetAsync($"api/forum/thread/{threadId}");
-            var responseContent = await response.Content.ReadAsStringAsync();
-            var result = JsonSerializer.Deserialize<GenericGetResult<ThreadModel>>(responseContent,
-                                                                                   new JsonSerializerOptions() { PropertyNameCaseInsensitive = true });
-            return result;
-        }
-
         public async Task<GenericGetResult<List<PostModel>>> GetPosts(int threadId)
         {
             var response = await _httpClient.GetAsync($"api/forum/posts/{threadId}");
             var responseContent = await response.Content.ReadAsStringAsync();
             var result = JsonSerializer.Deserialize<GenericGetResult<List<PostModel>>>(responseContent,
                                                                                        new JsonSerializerOptions() { PropertyNameCaseInsensitive = true });
+            return result;
+        }
+
+        public async Task<GenericGetResult<List<PostModel>>> GetPosts(int threadId, int pageNumber, int postPerPage)
+        {
+            var response = await _httpClient.GetAsync($"api/forum/posts/{threadId}/{pageNumber}/{postPerPage}");
+            var responseContent = await response.Content.ReadAsStringAsync();
+            var result = JsonSerializer.Deserialize<GenericGetResult<List<PostModel>>>(responseContent, new JsonSerializerOptions() { PropertyNameCaseInsensitive = true });
+            return result;
+        }
+
+        public async Task<GenericGetResult<ThreadModel>> GetThread(int threadId)
+        {
+            var response = await _httpClient.GetAsync($"api/forum/thread/{threadId}");
+            var responseContent = await response.Content.ReadAsStringAsync();
+            var result = JsonSerializer.Deserialize<GenericGetResult<ThreadModel>>(responseContent,
+                                                                                   new JsonSerializerOptions() { PropertyNameCaseInsensitive = true });
             return result;
         }
 
@@ -103,6 +111,22 @@ namespace ForumSPA.Client.Services
             var responseContent = await response.Content.ReadAsStringAsync();
             var result = JsonSerializer.Deserialize<GenericResult>(responseContent,
                                                                    new JsonSerializerOptions() { PropertyNameCaseInsensitive = true });
+            return result;
+        }
+
+        public async Task<GenericGetResult<PostModel>> GetPost(int postId)
+        {
+            var response = await _httpClient.GetAsync($"api/forum/post/{postId}");
+            var responseContent = await response.Content.ReadAsStringAsync();
+            var result = JsonSerializer.Deserialize<GenericGetResult<PostModel>>(responseContent, new JsonSerializerOptions() { PropertyNameCaseInsensitive = true });
+            return result;
+        }
+
+        public async Task<GenericGetResult<int>> GetPostIndex(int threadId, int postId)
+        {
+            var response = await _httpClient.GetAsync($"api/forum/postIndex/{threadId}/{postId}");
+            var responseContent = await response.Content.ReadAsStringAsync();
+            var result = JsonSerializer.Deserialize<GenericGetResult<int>>(responseContent, new JsonSerializerOptions() { PropertyNameCaseInsensitive = true });
             return result;
         }
 

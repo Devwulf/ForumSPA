@@ -41,7 +41,9 @@ namespace ForumSPA.Client.Pages
 
         private int hubId { get; set; }
         private int threadId { get; set; }
+        private int page { get; set; }
         private int postId { get; set; }
+        private int postNum { get; set; }
         private string threadSearch { get; set; }
         private bool isEditingThread { get; set; } = false;
         private bool isEditingPost { get; set; } = false;
@@ -83,7 +85,9 @@ namespace ForumSPA.Client.Pages
 
             hubId = query.TryGetValue("hubId", out var hubStr) ? (int.TryParse(hubStr.First(), out int hubInt) ? hubInt : -1) : -1;
             threadId = query.TryGetValue("threadId", out var threadStr) ? (int.TryParse(threadStr.First(), out int threadInt) ? threadInt : -1) : -1;
+            page = query.TryGetValue("page", out var pageStr) ? (int.TryParse(pageStr.First(), out int pageInt) ? (pageInt > 1 ? pageInt : 1) : 1) : 1;
             postId = query.TryGetValue("postId", out var postStr) ? (int.TryParse(postStr.First(), out int postInt) ? postInt : -1) : -1;
+            postNum = query.TryGetValue("post", out var postNumStr) ? (int.TryParse(postNumStr.First(), out int postNumInt) ? postNumInt : -1) : -1;
             threadSearch = query.TryGetValue("threadSearch", out var searchStr) ? searchStr.ToString() : null;
 
             if (hubId > 0)
@@ -93,13 +97,6 @@ namespace ForumSPA.Client.Pages
                     hub = result.Value;
             }
 
-            if (hub != null)
-            {
-                var result = await ForumService.GetThreads(hub.Id);
-                if (result.Succeeded)
-                    threads = result.Value;
-            }
-
             if (threadId > 0)
             {
                 var result = await ForumService.GetThread(threadId);
@@ -107,14 +104,43 @@ namespace ForumSPA.Client.Pages
                     thread = result.Value;
             }
 
+            if (hub != null && thread != null && postId > 0)
+            {
+                // Go to the page where the post is and scroll down to it
+                // Find page where the post will be
+                var post = await ForumService.GetPost(postId);
+                if (post.Succeeded)
+                {
+                    var postIndex = await ForumService.GetPostIndex(thread.Id, post.Value.Id);
+                    if (postIndex.Succeeded)
+                    {
+                        var pageNum = (int)Math.Floor(postIndex.Value / 10.0) + 1;
+                        NavManager.NavigateTo($"/forum?hubId={hub.Id}&threadId={thread.Id}&page={pageNum}&post={post.Value.Id}");
+                        return;
+                    }
+                }
+            }
+
+            if (hub != null)
+            {
+                var result = await ForumService.GetThreads(hub.Id);
+                if (result.Succeeded)
+                    threads = result.Value;
+            }
+
             if (thread != null)
             {
-                var result = await ForumService.GetPosts(thread.Id);
+                var result = await ForumService.GetPosts(thread.Id, page, 10);
                 if (result.Succeeded)
                     posts = result.Value;
 
                 StateHasChanged(); // Wait for all html to load first
                 await JSRuntime.InvokeVoidAsync("helperFunctions.IFramelyLoad");
+            }
+
+            if (postNum > 0)
+            {
+                await JSRuntime.InvokeVoidAsync("helperFunctions.scrollToElementId", postNum);
             }
 
             if (hub != null && !threadSearch.IsNullOrWhiteSpace())
@@ -256,9 +282,12 @@ namespace ForumSPA.Client.Pages
 
         private async Task HandleQuotePost(PostModel model)
         {
+            if (hub == null || thread == null)
+                return;
+
             var quote = $"<blockquote>" +
                             $"<div class=\"d-flex justify-content-end small c-gray-light\">" +
-                                $"quoting&nbsp;<a href=\"/\">{model.UserName}</a>&nbsp;(post&nbsp;<a href=\"/\">#{model.Id}</a>)" +
+                                $"quoting&nbsp;<a href=\"/\">{model.UserName}</a>&nbsp;(post&nbsp;<a href=\"/forum?hubId={hub.Id}&threadId={thread.Id}&postId={model.Id}\">#{model.Id}</a>)" +
                             $"</div>" +
                             $"{ClearBlockQuotes(model.Body)}" +
                         $"</blockquote>" +
@@ -310,6 +339,25 @@ namespace ForumSPA.Client.Pages
                 return "1 Reply";
 
             return $"{replies} Replies";
+        }
+
+        private int PageCount()
+        {
+            if (thread == null)
+                return 0;
+
+            var postCount = thread.ReplyCount + 1;
+            var pageCount = (int)Math.Ceiling(postCount / 10.0);
+
+            return pageCount;
+        }
+
+        private string ActivePageButton(int pageNum)
+        {
+            if (pageNum == page)
+                return "btn-primary";
+
+            return "btn-secondary";
         }
 
         private string EncodeUri(string uri)

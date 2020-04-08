@@ -163,6 +163,27 @@ namespace ForumSPA.Server.Controllers
             });
         }
 
+        [HttpGet("posts/{threadId:int}/{pageNumber:int}/{postPerPage:int}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetPostModelsByThread(int threadId, int pageNumber, int postPerPage)
+        {
+            var postModels = new List<PostModel>();
+            var posts = await _forumService.GetAllPostsByThread(threadId, pageNumber, postPerPage);
+
+            foreach (var post in posts)
+            {
+                var model = await ConvertPostToPostModel(post);
+                if (model != null)
+                    postModels.Add(model);
+            }
+
+            return Ok(new GenericGetResult<List<PostModel>>()
+            {
+                Succeeded = true,
+                Value = postModels
+            });
+        }
+
         [HttpGet("posts/{userId}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<IActionResult> GetPostModelsByUser(string userId)
@@ -496,6 +517,26 @@ namespace ForumSPA.Server.Controllers
             {
                 Succeeded = true,
                 Value = postModel
+            });
+        }
+
+        [HttpGet("postIndex/{threadId:int}/{postId:int}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public IActionResult GetPostIndex(int threadId, int postId)
+        {
+            var post = _forumService.GetPostIndex(threadId, postId);
+            if (post < 0)
+                return BadRequest(new GenericGetResult<int>()
+                {
+                    Succeeded = false,
+                    Error = $"Post index of id '{postId}' was not found and not retrieved."
+                });
+
+            return Ok(new GenericGetResult<int>()
+            {
+                Succeeded = true,
+                Value = post
             });
         }
 

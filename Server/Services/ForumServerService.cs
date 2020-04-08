@@ -112,6 +112,19 @@ namespace ForumSPA.Server.Services
             return posts;
         }
 
+        // First page is page 1
+        public async Task<IEnumerable<Post>> GetAllPostsByThread(int threadId, int pageNumber, int postPerPage)
+        {
+            var posts = await (from p in _context.Posts
+                               where p.ThreadId == threadId
+                               orderby p.DateCreated ascending
+                               select p)
+                               .Skip(postPerPage * (pageNumber - 1))
+                               .Take(postPerPage)
+                               .ToListAsync();
+            return posts;
+        }
+
         public async Task<IEnumerable<Post>> GetAllPostsByUser(string userId)
         {
             var posts = await (from p in _context.Posts
@@ -119,6 +132,21 @@ namespace ForumSPA.Server.Services
                                orderby p.DateCreated descending
                                select p).ToListAsync();
             return posts;
+        }
+
+        public int GetPostIndex(int threadId, int postId)
+        {
+            var query = (from p in _context.Posts
+                        where p.ThreadId == threadId
+                        orderby p.DateCreated ascending
+                        select p).AsEnumerable();
+
+            var result = query
+                .Select((post, index) => new { post, index })
+                .Where(item => item.post.Id.Equals(postId))
+                .FirstOrDefault();
+
+            return result != null ? result.index : -1;
         }
 
         public async Task<Post> GetPost(int postId)
